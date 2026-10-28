@@ -1,0 +1,6 @@
+{
+ "_說明": "爬蟲設定。enabled 開關各來源。Google新聞：robots.txt 不允許讀取 RSS（見 radar/crawl/sources/google.py）。天下雜誌：網站對本爬蟲回應 403 拒絕存取（見 radar/crawl/sources/cw.py）。兩者暫停，不繞過網站阻擋。per_source_limit 是每個來源每次最多處理幾則新聞。",
+ "enabled": {"yahoo": true, "google": false, "udn": true, "bw": true, "cw": false},
+ "per_source_limit": 30,
+ "title_dedupe_days": 3
+}

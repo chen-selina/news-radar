@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>台股新聞雷達</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>台股新聞雷達</h1>
+      <div class="sub">最後爬取 <b id="updated">—</b> · 共 <b id="count">0</b> 則 · 詞典第 <b id="lexv">—</b> 版 · 上次排程 <b id="lastjob" title="">—</b> · 分析方式：關鍵字＋情緒詞典</div>
+    </div>
+    <div class="actions">
+      <span class="legend"><span><i style="background:var(--up)"></i>利多（紅）</span><span><i style="background:var(--down)"></i>利空（綠）</span><span>台股慣例：紅漲綠跌</span></span>
+      <button class="btn" id="crawl" title="開發用：立刻爬取一次，約需數分鐘">重新爬取新聞</button>
+    </div>
+  </header>
+  <div class="banner" id="apiErr" hidden></div>
+  <div class="log" id="log" hidden></div>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="feed">最新新聞</button>
+    <button role="tab" aria-selected="false" data-tab="try">貼連結分析</button>
+    <button role="tab" aria-selected="false" data-tab="lex">情緒詞典</button>
+    <button role="tab" aria-selected="false" data-tab="val">預測驗證</button>
+    <button role="tab" aria-selected="false" data-tab="arch">系統架構</button>
+  </nav>
+
+  <section id="tab-feed">
+    <div class="grid">
+      <div>
+        <div class="toolbar">
+          <button class="chip" data-f="all" aria-pressed="true">全部</button>
+          <button class="chip" data-f="pos" aria-pressed="false">利多</button>
+          <button class="chip" data-f="neg" aria-pressed="false">利空</button>
+          <button class="chip" data-f="neu" aria-pressed="false">中性</button>
+          <select id="period" aria-label="期間"><option value="1">今天</option><option value="3">近 3 天</option><option value="7" selected>近 7 天</option><option value="30">近 30 天</option><option value="">全部期間</option></select>
+          <select id="srcSel" aria-label="新聞來源"><option value="">全部來源</option></select>
+          <input type="search" id="q" placeholder="搜尋標題、內文、公司或代號">
+          <div class="filtnote" id="filtnote" hidden></div>
+        </div>
+        <div class="feed" id="feed"></div>
+        <button class="btn ghost more" id="more" hidden>載入更多</button>
+      </div>
+      <aside class="side">
+        <div class="panel">
+          <h2 id="distH">情緒分布</h2>
+          <div class="dist" id="dist"></div>
+          <div class="distnums" id="distnums"></div>
+        </div>
+        <div class="panel">
+          <h2>個股影響排行</h2>
+          <div class="note">分數＝期間內相關新聞的情緒分數加總（以鎖定的預測計算）。點選個股可篩選新聞。</div>
+          <div class="rank-h up">偏多</div>
+          <ul class="rank" id="rankUp"></ul>
+          <div class="rank-h down">偏空</div>
+          <ul class="rank" id="rankDown"></ul>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="tab-try" hidden>
+    <div class="two">
+      <div class="panel pad">
+        <label class="lb" for="tUrl">新聞連結</label>
+        <div class="row urlrow"><input type="url" class="full" id="tUrl" placeholder="貼上新聞網址，例如 https://money.udn.com/money/story/…"><button class="btn" id="tFetch">讀取並分析</button></div>
+        <div class="fetchstat" id="tStat" role="status">貼上連結後按「讀取並分析」，伺服器會讀取網頁、擷取標題與內文，再自動分析。</div>
+        <div class="srcline" id="tSrc"></div>
+        <details class="manual" id="tManual" open>
+          <summary>標題與內文（自動帶入，可修改；讀不到時可手動貼上）</summary>
+          <label class="lb" for="tTitle">新聞標題</label>
+          <input type="text" class="full" id="tTitle">
+          <label class="lb" for="tBody">新聞內容</label>
+          <textarea id="tBody"></textarea>
+          <div class="row" style="margin-top:10px"><button class="btn ghost" id="tRun">重新分析</button><span class="note">修改內容後按這裡</span></div>
+        </details>
+      </div>
+      <div id="tOut"></div>
+    </div>
+  </section>
+
+  <section id="tab-lex" hidden>
+    <div class="two">
+      <div class="panel pad">
+        <h2>利多詞（正分）</h2><div class="lex" id="lexPos"></div>
+        <h2 style="margin-top:16px">利空詞（負分）</h2><div class="lex" id="lexNeg"></div>
+        <h2 style="margin-top:16px">產業關鍵字 → 連動族群</h2><div class="lex" id="lexSec"></div>
+        <p class="note">產業關鍵字請直接修改 <code>config/lexicon.json</code>，存檔後會自動建立新版本。</p>
+      </div>
+      <div class="panel pad">
+        <h2>新增或修改情緒詞</h2>
+        <p class="note">每次修改都會建立新的詞典版本，所有使用這個網站的人共用。已鎖定的預測不受影響，之後新抓到的新聞才會用新版詞典。</p>
+        <label class="lb" for="nw">詞彙</label>
+        <input type="text" class="full" id="nw" placeholder="例如：漲價效應">
+        <label class="lb" for="nwt">分數（正數為利多、負數為利空；輸入既有的詞會改成新分數）</label>
+        <div class="row"><input type="number" id="nwt" value="1.5" step="0.5" min="-5" max="5" style="width:110px"><button class="btn" id="nwAdd">存入詞典</button></div>
+        <p class="note" id="nwMsg"></p>
+        <h2 style="margin-top:18px">版本紀錄</h2>
+        <ul class="vers" id="lexVers"></ul>
+        <h2 style="margin-top:18px">判斷規則</h2>
+        <p class="note">1. 標題中的詞權重 ×1.5。<br>2. 同一句中詞前 5 字內出現「未、不、無、沒有、並非」會把分數反轉，例如「未見砍單」算利多。<br>3. 前方有「大幅、強勁、明顯」等詞時分數 ×1.5。<br>4. 新聞直接提到的公司，取「提到它的那幾句」的分數；只提到產業關鍵字的，相關族群取一半分數，標為「產業連動」。<br>5. 總分 ≥ 1 為利多、≤ −1 為利空，絕對值 ≥ 4 為高影響。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-val" hidden>
+    <div class="panel vctrl">
+      <label>預測<select id="vLex"><option value="">原始預測（鎖定）</option></select></label>
+      <label>觀察期間<span class="seg" id="vH"><button data-v="1" aria-pressed="false">隔日</button><button data-v="3" aria-pressed="true">3 日</button><button data-v="5" aria-pressed="false">5 日</button><button data-v="10" aria-pressed="false">10 日</button></span></label>
+      <label>比較基準<span class="seg" id="vB"><button data-v="excess" aria-pressed="true">扣除大盤</button><button data-v="raw" aria-pressed="false">個股漲跌</button></span></label>
+      <label>個股範圍<span class="seg" id="vS"><button data-v="all" aria-pressed="true">含產業連動</button><button data-v="direct" aria-pressed="false">只看直接提及</button></span></label>
+      <label for="vThr">「持平」門檻 ±%<input type="number" id="vThr" value="1" min="0" max="10" step="0.5" style="width:90px"></label>
+      <button class="btn ghost" id="vRecalc" title="用目前的詞典重新分析所有新聞，另存成重算結果，不改原始預測">用目前詞典重算</button>
+    </div>
+    <div class="warnbar" id="vWarn"></div>
+    <div class="tiles" id="vTiles"></div>
+    <div class="vgrid">
+      <div class="panel pad chartbox">
+        <h2>新聞發布前後的平均累積報酬</h2>
+        <div class="note" id="vChartNote"></div>
+        <div id="vChart"></div>
+      </div>
+      <div class="panel pad">
+        <h2>影響程度 vs 命中率</h2>
+        <div class="note">分數越強的預測應該越準；如果「高」沒有比「低」準，代表詞典權重需要調整。</div>
+        <div id="vStr"></div>
+        <h2 style="margin-top:16px">驗證規則</h2>
+        <p class="note">基準價：新聞在 13:30 收盤前發布，取前一交易日收盤；收盤後發布，取當日收盤。<br>實際方向：第 N 個交易日的報酬（或扣除大盤後的超額報酬）高於門檻為漲、低於負門檻為跌，其餘為持平。<br>命中：預測利多且實際漲，或預測利空且實際跌。中性預測不計入命中率。<br>交易日以證交所公布的開市日為準（颱風、國定假日休市不算）。</p>
+      </div>
+    </div>
+    <div class="panel pad" style="margin-top:16px">
+      <div class="row" style="justify-content:space-between"><h2 style="margin:0">逐筆驗證結果</h2>
+        <span class="row" id="vRowF"><button class="chip" data-f="all" aria-pressed="true">全部</button><button class="chip" data-f="hit" aria-pressed="false">命中</button><button class="chip" data-f="miss" aria-pressed="false">未命中</button><button class="chip" data-f="wait" aria-pressed="false">待驗證</button></span></div>
+      <div class="tblwrap"><table class="vt"><thead><tr><th>新聞日期</th><th>新聞</th><th>個股</th><th>預測</th><th>基準價 → 第 N 日</th><th id="vRetH">超額報酬</th><th>結果</th></tr></thead><tbody id="vRows"></tbody></table></div>
+    </div>
+    <div class="panel src-panel">
+      <h2>收盤價資料</h2>
+      <p class="note" id="pRange"></p>
+      <div class="row"><button class="btn ghost" id="pUpdate">抓取最新收盤價</button><span class="note">從證交所、櫃買中心抓還沒有的交易日（每天收盤後排程也會自動跑）。</span></div>
+      <details class="manual">
+        <summary>匯入收盤價 CSV（官方資料抓不到時使用）</summary>
+        <label class="lb" for="pFile">檔案（日期, 代號, 收盤價）</label>
+        <input type="file" id="pFile" accept=".csv,text/csv,text/plain">
+        <pre>日期,代號,收盤價
+2026/09/01,2330,1985
+115/09/01,2408,182.5
+2026-09-01,TAIEX,32150.6</pre>
+        <p class="note">日期可用西元或民國年。大盤代號填 TAIEX、加權指數或大盤，用來計算超額報酬。</p>
+        <textarea id="pText" placeholder="或直接把 CSV 內容貼在這裡" style="min-height:110px"></textarea>
+        <div class="row" style="margin-top:10px"><button class="btn" id="pImport">匯入</button></div>
+      </details>
+      <p class="note" id="pMsg"></p>
+    </div>
+  </section>
+
+  <section id="tab-arch" hidden>
+    <div class="panel pad">
+      <h2>運作流程</h2>
+      <ol class="arch">
+        <li><b>爬蟲</b>讀各來源的 RSS 或文章列表頁，再讀文章頁取標題、時間與內文。每個網址先檢查 robots.txt，同一網站請求有間隔。</li>
+        <li><b>原文連結</b>每則新聞以原文網址為唯一鍵，沒有網址就不收錄；網址會先去掉追蹤參數。</li>
+        <li><b>去重與儲存</b>網址相同、或 3 天內標題相同的視為同一則，存進 SQLite。</li>
+        <li><b>詞典分析</b>套用與原型相同的規則，再加上公司短名稱排除規則與產業連動的句子限制。</li>
+        <li><b>鎖定預測</b>新聞存檔當下就把分數與詞典版本存檔，資料庫禁止事後修改。</li>
+        <li><b>收盤價</b>收盤後抓證交所、櫃買中心的官方收盤價與加權指數。</li>
+        <li><b>自動驗證</b>比對新聞後第 N 個交易日的股價，計算命中率；依結果調整詞典，再用「重算」比較新舊詞典。</li>
+        <li><b>網站</b>這個頁面所有資料都來自後端 API（說明在 <a class="origlink" href="/docs" target="_blank">/docs</a>）。</li>
+      </ol>
+      <p class="note" id="srcStatus" style="margin-top:12px"></p>
+    </div>
+  </section>
+
+  <footer>新聞來自指定來源，完整內容請點標題閱讀原文。股價為證交所、櫃買中心公布的收盤價。分析結果僅為關鍵字規則推估，不構成投資建議。</footer>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

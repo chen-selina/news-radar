@@ -1,0 +1,33 @@
+User-agent: *
+Disallow: /
+Allow: /$
+Allow: /?
+Allow: /home$
+Allow: /home?
+Allow: /home/
+Allow: /nwshp$
+Allow: /topics/
+Allow: /publications/
+Allow: /stories/
+Allow: /swg/
+Allow: /about$
+Allow: /about?
+Allow: /about/
+
+User-agent: Googlebot
+Disallow: /
+Allow: /$
+Allow: /?
+Allow: /home$
+Allow: /home?
+Allow: /home/
+Allow: /swg/js/v1/swg-basic.js
+
+User-agent: CCBot
+User-agent: GPTBot
+User-agent: ChatGPT-User
+User-agent: PerplexityBot
+User-agent: anthropic-ai
+User-agent: ClaudeBot
+User-agent: Claude-Web
+Disallow: /

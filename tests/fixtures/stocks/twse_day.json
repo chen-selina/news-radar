@@ -1,0 +1,26 @@
+[
+ {
+  "Date": "1151022",
+  "Code": "2330",
+  "Name": "台積電",
+  "ClosingPrice": "2385.00"
+ },
+ {
+  "Date": "1151022",
+  "Code": "2408",
+  "Name": "南亞科",
+  "ClosingPrice": "414.00"
+ },
+ {
+  "Date": "1151022",
+  "Code": "2610",
+  "Name": "華航",
+  "ClosingPrice": "20.50"
+ },
+ {
+  "Date": "1151022",
+  "Code": "4958",
+  "Name": "臻鼎-KY",
+  "ClosingPrice": "567.00"
+ }
+]

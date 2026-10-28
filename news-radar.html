@@ -1,0 +1,820 @@
+<title>台股新聞雷達</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: 交易終端風格的雙欄 —— 左邊新聞串流，右邊個股影響排行；下方分頁切換「自行分析」與「詞典」 */
+:root{
+  --bg:#EEF0F3; --panel:#FFFFFF; --ink:#18202B; --muted:#5D6776; --line:#D9DDE4;
+  --accent:#2C4A8A; --accent-soft:#E3E9F6;
+  --up:#C8322A; --up-soft:#FBE7E5; --down:#16804A; --down-soft:#E2F3EA; --flat:#7A8494; --flat-soft:#ECEEF1;
+  --hl:#FFF1B8;
+  --f-display:"Noto Serif TC","Songti TC",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12161D; --panel:#1A1F28; --ink:#E6E9EE; --muted:#9AA3B2; --line:#2B323E;
+  --accent:#8EA9E8; --accent-soft:#232D44;
+  --up:#F0675C; --up-soft:#3A2224; --down:#4CC48A; --down-soft:#1C3329; --flat:#9AA3B2; --flat-soft:#262C36;
+  --hl:#4A4220; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161D; --panel:#1A1F28; --ink:#E6E9EE; --muted:#9AA3B2; --line:#2B323E;
+  --accent:#8EA9E8; --accent-soft:#232D44;
+  --up:#F0675C; --up-soft:#3A2224; --down:#4CC48A; --down-soft:#1C3329; --flat:#9AA3B2; --flat-soft:#262C36;
+  --hl:#4A4220; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+header.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:14px}
+h1{font-family:var(--f-display);font-weight:900;font-size:clamp(26px,4vw,36px);margin:0;letter-spacing:.02em;line-height:1.2}
+.sub{color:var(--muted);font-size:13px;margin-top:4px}
+.sub b{font-family:var(--f-mono);font-weight:500;color:var(--ink)}
+.proto{display:inline-block;font-size:11px;letter-spacing:.08em;border:1px solid var(--accent);color:var(--accent);padding:1px 7px;border-radius:3px;margin-left:8px;vertical-align:middle;font-family:var(--f-body)}
+.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+button{font-family:inherit;font-size:14px;cursor:pointer}
+.btn{background:var(--accent);color:var(--panel);border:0;padding:9px 16px;border-radius:6px;font-weight:500}
+.btn:hover{filter:brightness(1.1)}
+.btn:disabled{opacity:.6;cursor:progress}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.legend{font-size:12px;color:var(--muted);display:flex;gap:10px;align-items:center}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+
+.log{font-family:var(--f-mono);font-size:12px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin-top:14px;color:var(--muted);max-height:150px;overflow:auto}
+.log div::before{content:"› ";color:var(--accent)}
+
+nav.tabs{display:flex;gap:4px;margin:18px 0 14px;border-bottom:1px solid var(--line);overflow-x:auto}
+nav.tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:8px 14px;color:var(--muted);font-weight:500;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px}
+.side{display:flex;flex-direction:column;gap:16px}
+.side .panel{padding:14px 16px}
+.panel h2{font-size:13px;letter-spacing:.08em;color:var(--muted);margin:0 0 10px;font-weight:700}
+
+.dist{display:flex;height:12px;border-radius:3px;overflow:hidden;background:var(--flat-soft)}
+.dist span{display:block;height:100%}
+.distnums{display:flex;justify-content:space-between;font-size:13px;margin-top:8px;font-variant-numeric:tabular-nums}
+.distnums b{font-family:var(--f-mono);font-size:20px;display:block;line-height:1.2}
+
+.rank{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.rank li button{width:100%;display:grid;grid-template-columns:44px 1fr 74px 42px;gap:8px;align-items:center;background:none;border:0;padding:6px 4px;border-radius:4px;text-align:left;color:var(--ink)}
+.rank li button:hover,.rank li button[aria-pressed="true"]{background:var(--accent-soft)}
+.code{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.bar{height:8px;background:var(--flat-soft);border-radius:2px;position:relative;overflow:hidden}
+.bar span{position:absolute;top:0;bottom:0;left:0;border-radius:2px}
+.num{font-family:var(--f-mono);font-size:13px;text-align:right;font-variant-numeric:tabular-nums}
+.up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--flat)}
+.rank-h{font-size:12px;color:var(--muted);margin:10px 0 4px}
+
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.chip{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:5px 12px;border-radius:999px;font-size:13px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+input[type=search],input[type=text],input[type=number],textarea,select{font-family:inherit;font-size:14px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+input[type=search]{flex:1;min-width:160px}
+.filtnote{font-size:13px;color:var(--muted);width:100%}
+.filtnote button{background:none;border:0;color:var(--accent);text-decoration:underline;padding:0}
+
+.feed{display:flex;flex-direction:column;gap:12px}
+article.news{background:var(--panel);border:1px solid var(--line);border-radius:8px;display:grid;grid-template-columns:6px minmax(0,1fr);overflow:hidden}
+article.news .stripe{background:var(--flat)}
+article.news.pos .stripe{background:var(--up)} article.news.neg .stripe{background:var(--down)}
+.nbody{padding:14px 16px;min-width:0}
+.meta{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:12px;color:var(--muted)}
+.pill{font-size:12px;font-weight:700;padding:2px 9px;border-radius:3px}
+.pill.pos{background:var(--up-soft);color:var(--up)} .pill.neg{background:var(--down-soft);color:var(--down)} .pill.neu{background:var(--flat-soft);color:var(--flat)}
+.score{font-family:var(--f-mono);font-weight:600}
+article h3{font-size:17px;margin:6px 0 4px;line-height:1.45;text-wrap:balance}
+.text{color:var(--muted);font-size:14px;margin:0}
+mark{background:none;color:inherit;padding:0 1px;border-radius:2px}
+mark.k-pos{background:var(--up-soft);color:var(--up);font-weight:500}
+mark.k-neg{background:var(--down-soft);color:var(--down);font-weight:500}
+mark.k-stock{box-shadow:inset 0 -2px 0 var(--accent);color:var(--ink);font-weight:500}
+mark.k-sector{box-shadow:inset 0 -1px 0 var(--muted);color:var(--ink)}
+mark.k-negator{background:var(--hl);color:var(--ink)}
+details.why{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+details.why summary{cursor:pointer;font-size:13px;color:var(--accent);font-weight:500}
+.impacts{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.imp{display:grid;grid-template-columns:118px 64px minmax(0,1fr);gap:10px;font-size:13px;align-items:baseline}
+@media (max-width:520px){.imp{grid-template-columns:1fr auto}.imp .reason{grid-column:1/-1}}
+.imp .nm b{font-weight:700}
+.imp .reason{color:var(--muted)}
+.hits{font-size:12px;color:var(--muted);margin-top:8px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.stag{font-size:12px;border:1px solid var(--line);border-radius:4px;padding:1px 7px;display:inline-flex;gap:5px;align-items:baseline}
+.stag .code{font-size:11px}
+.empty{padding:28px;text-align:center;color:var(--muted);background:var(--panel);border:1px dashed var(--line);border-radius:8px}
+
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.two{grid-template-columns:minmax(0,1fr)}}
+.pad{padding:16px}
+label.lb{display:block;font-size:13px;font-weight:500;margin:10px 0 4px}
+textarea{width:100%;min-height:150px;resize:vertical;line-height:1.6}
+input[type=text].full{width:100%}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.lex{display:flex;flex-wrap:wrap;gap:6px}
+.lex span{font-size:13px;padding:2px 8px;border-radius:4px;font-variant-numeric:tabular-nums}
+.lex .p{background:var(--up-soft);color:var(--up)} .lex .n{background:var(--down-soft);color:var(--down)}
+.lex .c{background:var(--accent-soft);color:var(--accent)}
+.lex small{font-family:var(--f-mono);opacity:.8;margin-left:4px}
+.lex button{background:none;border:0;color:inherit;padding:0 0 0 4px;font-size:13px}
+.note{font-size:13px;color:var(--muted)}
+.arch{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;counter-reset:s}
+.arch li{border:1px solid var(--line);border-radius:6px;padding:10px 12px;counter-increment:s;font-size:13px;color:var(--muted)}
+.arch li b{display:block;color:var(--ink);font-size:14px}
+.arch li b::before{content:counter(s) ". ";font-family:var(--f-mono);color:var(--accent)}
+a.orig{color:inherit;text-decoration:none}a.orig:hover{text-decoration:underline}
+.origlink{color:var(--accent);font-weight:500;text-decoration:none}.origlink:hover{text-decoration:underline}
+table.vt a.orig{font-weight:500}
+.urlrow{flex-wrap:nowrap}.urlrow input{min-width:0}
+@media (max-width:520px){.urlrow{flex-wrap:wrap}}
+.fetchstat{font-size:13px;color:var(--muted);margin-top:8px;padding:8px 10px;border-radius:6px;background:var(--bg)}
+.fetchstat.ok{color:var(--accent);background:var(--accent-soft)}.fetchstat.bad{color:var(--ink);background:var(--hl)}
+.srcline{font-size:13px;margin-top:8px;color:var(--muted)}
+details.manual{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+details.manual summary{cursor:pointer;font-size:13px;font-weight:500;color:var(--ink)}
+footer{margin-top:28px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+@media (prefers-reduced-motion:no-preference){article.news.fresh{animation:in .5s ease}@keyframes in{from{background:var(--accent-soft)}to{background:var(--panel)}}}
+.vctrl{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:end;padding:14px 16px}
+.vctrl label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{background:var(--panel);color:var(--ink);border:0;padding:6px 12px;font-size:13px}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--panel)}
+.tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:16px 0}
+@media (max-width:820px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.tile .k{font-size:12px;color:var(--muted)}
+.tile .v{font-family:var(--f-mono);font-size:26px;font-weight:600;line-height:1.25;font-variant-numeric:tabular-nums}
+.tile .s{font-size:12px;color:var(--muted)}
+.vgrid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.vgrid{grid-template-columns:minmax(0,1fr)}}
+.chartbox svg{width:100%;height:auto;display:block}
+.chartbox text{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+.sbar{display:grid;grid-template-columns:48px minmax(0,1fr) 92px;gap:10px;align-items:center;font-size:13px;margin:8px 0}
+.sbar .track{height:14px;background:var(--flat-soft);border-radius:3px;position:relative;overflow:hidden}
+.sbar .track span{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:3px}
+.sbar .track i{position:absolute;top:-2px;bottom:-2px;left:50%;border-left:1px dashed var(--muted)}
+.tblwrap{overflow-x:auto;margin-top:10px}
+table.vt{width:100%;border-collapse:collapse;font-size:13px;min-width:720px}
+table.vt th{text-align:left;font-weight:500;color:var(--muted);font-size:12px;border-bottom:1px solid var(--line);padding:8px 6px;white-space:nowrap}
+table.vt td{border-bottom:1px solid var(--line);padding:8px 6px;vertical-align:top}
+table.vt td.n{font-family:var(--f-mono);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+table.vt .ttl{max-width:300px}
+.res{font-weight:700;font-size:12px;padding:2px 8px;border-radius:3px;white-space:nowrap}
+.res.ok{background:var(--accent-soft);color:var(--accent)} .res.bad{background:var(--flat-soft);color:var(--muted);text-decoration:line-through}
+.res.wait{border:1px dashed var(--line);color:var(--muted)}
+.src-panel{padding:14px 16px;margin-top:16px}
+.src-panel pre{font-family:var(--f-mono);font-size:12px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;overflow-x:auto;margin:6px 0}
+.err{color:var(--down);font-size:13px}
+.warnbar{font-size:13px;background:var(--accent-soft);color:var(--ink);border-radius:6px;padding:8px 12px;margin-top:12px}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>台股新聞雷達<span class="proto">原型</span></h1>
+      <div class="sub">最後更新 <b id="updated">2026/10/27 08:00</b> · 共 <b id="count">0</b> 則 · 分析方式：關鍵字＋情緒詞典</div>
+    </div>
+    <div class="actions">
+      <span class="legend"><span><i style="background:var(--up)"></i>利多（紅）</span><span><i style="background:var(--down)"></i>利空（綠）</span><span>台股慣例：紅漲綠跌</span></span>
+      <button class="btn" id="crawl">重新爬取新聞</button>
+    </div>
+  </header>
+  <div class="log" id="log" hidden></div>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="feed">最新新聞</button>
+    <button role="tab" aria-selected="false" data-tab="try">貼連結分析</button>
+    <button role="tab" aria-selected="false" data-tab="lex">情緒詞典</button>
+    <button role="tab" aria-selected="false" data-tab="val">預測驗證</button>
+    <button role="tab" aria-selected="false" data-tab="arch">正式版架構</button>
+  </nav>
+
+  <section id="tab-feed">
+    <div class="grid">
+      <div>
+        <div class="toolbar">
+          <button class="chip" data-f="all" aria-pressed="true">全部</button>
+          <button class="chip" data-f="pos" aria-pressed="false">利多</button>
+          <button class="chip" data-f="neg" aria-pressed="false">利空</button>
+          <button class="chip" data-f="neu" aria-pressed="false">中性</button>
+          <select id="srcSel" aria-label="新聞來源"><option value="all">全部來源</option><option value="yahoo">Yahoo奇摩股市</option><option value="google">Google新聞</option><option value="bw">商業周刊</option><option value="cw">天下雜誌</option><option value="udn">經濟日報</option></select>
+          <input type="search" id="q" placeholder="搜尋標題、公司或代號">
+          <div class="filtnote" id="filtnote" hidden></div>
+        </div>
+        <div class="feed" id="feed"></div>
+      </div>
+      <aside class="side">
+        <div class="panel">
+          <h2>今日情緒分布</h2>
+          <div class="dist" id="dist"></div>
+          <div class="distnums" id="distnums"></div>
+        </div>
+        <div class="panel">
+          <h2>個股影響排行</h2>
+          <div class="note">分數＝相關新聞的情緒分數加總。點選個股可篩選新聞。</div>
+          <div class="rank-h up">偏多</div>
+          <ul class="rank" id="rankUp"></ul>
+          <div class="rank-h down">偏空</div>
+          <ul class="rank" id="rankDown"></ul>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="tab-try" hidden>
+    <div class="two">
+      <div class="panel pad">
+        <label class="lb" for="tUrl">新聞連結</label>
+        <div class="row urlrow"><input type="url" class="full" id="tUrl" placeholder="貼上新聞網址，例如 https://money.udn.com/money/story/…" value="https://money.udn.com/money/story/5607/9834906"><button class="btn" id="tFetch">讀取並分析</button></div>
+        <div class="fetchstat" id="tStat" role="status">貼上連結後按「讀取並分析」，會用 Claude 桌面版的內建瀏覽器開啟網頁、擷取標題與內文，再自動分析。</div>
+        <div class="srcline" id="tSrc"></div>
+        <details class="manual" id="tManual" open>
+          <summary>標題與內文（自動帶入，可修改；讀不到時可手動貼上）</summary>
+          <label class="lb" for="tTitle">新聞標題</label>
+          <input type="text" class="full" id="tTitle" value="航空股布局時機到了？2027年油價降 法人看好這兩檔">
+          <label class="lb" for="tBody">新聞內容</label>
+          <textarea id="tBody">法人指出第四季油價上漲，航空公司獲利面臨壓力。但預估 2027 年油價下跌約兩成，獲利可望回升，給予華航、台灣虎航買進評等，長榮航維持中立。</textarea>
+          <div class="row" style="margin-top:10px"><button class="btn ghost" id="tRun">重新分析</button><span class="note">修改內容後按這裡</span></div>
+        </details>
+      </div>
+      <div id="tOut"></div>
+    </div>
+  </section>
+
+  <section id="tab-lex" hidden>
+    <div class="two">
+      <div class="panel pad">
+        <h2>利多詞（正分）</h2><div class="lex" id="lexPos"></div>
+        <h2 style="margin-top:16px">利空詞（負分）</h2><div class="lex" id="lexNeg"></div>
+        <h2 style="margin-top:16px">產業關鍵字 → 連動族群</h2><div class="lex" id="lexSec"></div>
+      </div>
+      <div class="panel pad">
+        <h2>加入自訂詞</h2>
+        <p class="note">新增後會立即重新分析所有新聞，並記在你這台瀏覽器裡。</p>
+        <label class="lb" for="nw">詞彙</label>
+        <input type="text" class="full" id="nw" placeholder="例如：漲價效應">
+        <label class="lb" for="nwt">分數（正數為利多、負數為利空）</label>
+        <div class="row"><input type="number" id="nwt" value="1.5" step="0.5" min="-5" max="5" style="width:110px"><button class="btn" id="nwAdd">加入詞典</button></div>
+        <p class="note" id="nwMsg"></p>
+        <h2 style="margin-top:18px">判斷規則</h2>
+        <p class="note">1. 標題中的詞權重 ×1.5。<br>2. 同一句中詞前 5 字內出現「未、不、無、沒有、並非」會把分數反轉，例如「未見砍單」算利多。<br>3. 前方有「大幅、強勁、明顯」等詞時分數 ×1.5。<br>4. 新聞直接提到的公司，取「提到它的那幾句」的分數；只提到產業關鍵字的，相關族群取一半分數，標為「產業連動」。<br>5. 總分 ≥ 1 為利多、≤ −1 為利空，絕對值 ≥ 4 為高影響。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-val" hidden>
+    <div class="panel vctrl">
+      <label>資料來源<span class="seg" id="vSrc"><button data-v="demo" aria-pressed="true">示範資料</button><button data-v="mine" aria-pressed="false">我的資料</button></span></label>
+      <label>觀察期間<span class="seg" id="vH"><button data-v="1" aria-pressed="false">隔日</button><button data-v="3" aria-pressed="true">3 日</button><button data-v="5" aria-pressed="false">5 日</button><button data-v="10" aria-pressed="false">10 日</button></span></label>
+      <label>比較基準<span class="seg" id="vB"><button data-v="ex" aria-pressed="true">扣除大盤</button><button data-v="raw" aria-pressed="false">個股漲跌</button></span></label>
+      <label>個股範圍<span class="seg" id="vS"><button data-v="all" aria-pressed="true">含產業連動</button><button data-v="direct" aria-pressed="false">只看直接提及</button></span></label>
+      <label for="vThr">「持平」門檻 ±%<input type="number" id="vThr" value="1" min="0" max="10" step="0.5" style="width:90px"></label>
+    </div>
+    <div class="warnbar" id="vWarn"></div>
+    <div class="tiles" id="vTiles"></div>
+    <div class="vgrid">
+      <div class="panel pad chartbox">
+        <h2>新聞發布前後的平均累積報酬</h2>
+        <div class="note" id="vChartNote"></div>
+        <div id="vChart"></div>
+      </div>
+      <div class="panel pad">
+        <h2>影響程度 vs 命中率</h2>
+        <div class="note">分數越強的預測應該越準；如果「高」沒有比「低」準，代表詞典權重需要調整。</div>
+        <div id="vStr"></div>
+        <h2 style="margin-top:16px">驗證規則</h2>
+        <p class="note">基準價：新聞在 13:30 收盤前發布，取前一交易日收盤；收盤後發布，取當日收盤。<br>實際方向：第 N 個交易日的報酬（或扣除大盤後的超額報酬）高於門檻為漲、低於負門檻為跌，其餘為持平。<br>命中：預測利多且實際漲，或預測利空且實際跌。中性預測不計入命中率。</p>
+      </div>
+    </div>
+    <div class="panel pad" style="margin-top:16px">
+      <div class="row" style="justify-content:space-between"><h2 style="margin:0">逐筆驗證結果</h2>
+        <span class="row" id="vRowF"><button class="chip" data-f="all" aria-pressed="true">全部</button><button class="chip" data-f="hit" aria-pressed="false">命中</button><button class="chip" data-f="miss" aria-pressed="false">未命中</button><button class="chip" data-f="wait" aria-pressed="false">待驗證</button></span></div>
+      <div class="tblwrap"><table class="vt"><thead><tr><th>新聞日期</th><th>新聞</th><th>個股</th><th>預測</th><th>基準價 → 第 N 日</th><th id="vRetH">超額報酬</th><th>結果</th></tr></thead><tbody id="vRows"></tbody></table></div>
+    </div>
+    <div class="panel src-panel" id="vMine" hidden>
+      <h2>匯入你的歷史資料</h2>
+      <div class="two">
+        <div>
+          <label class="lb" for="pFile">收盤價 CSV（日期, 代號, 收盤價）</label>
+          <input type="file" id="pFile" accept=".csv,text/csv,text/plain">
+          <pre>日期,代號,收盤價
+2026/09/01,2330,1985
+115/09/01,2408,182.5
+2026-09-01,TAIEX,32150.6</pre>
+          <p class="note">日期可用西元或民國年（證交所下載的格式）。大盤代號填 TAIEX、加權指數或大盤，用來計算超額報酬。</p>
+          <textarea id="pText" placeholder="或直接把 CSV 內容貼在這裡" style="min-height:110px"></textarea>
+        </div>
+        <div>
+          <label class="lb" for="nFile">新聞 CSV（日期, 時間, 來源, 標題, 原文網址, 內容）</label>
+          <input type="file" id="nFile" accept=".csv,text/csv,text/plain">
+          <pre>日期,時間,來源,標題,原文網址,內容
+2026/10/24,12:55,經濟日報,航空股布局時機到了？,https://money.udn.com/money/story/5607/9834906,"油價下跌，獲利回升"</pre>
+          <p class="note">來源須為 Yahoo奇摩、Google新聞、商業周刊、天下雜誌、經濟日報其中之一；沒有原文網址的列會被略過。時間可省略（視為盤前）。內容含逗號時請用雙引號包住。</p>
+          <textarea id="nText" placeholder="或直接把 CSV 內容貼在這裡" style="min-height:110px"></textarea>
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px"><button class="btn" id="mineRun">用我的資料驗證</button><span class="note" id="mineMsg"></span></div>
+    </div>
+  </section>
+
+  <section id="tab-arch" hidden>
+    <div class="panel pad">
+      <h2>正式上線時的運作流程</h2>
+      <ol class="arch">
+        <li><b>爬蟲</b>只抓五個來源：Yahoo奇摩股市與 Google新聞 讀 RSS，經濟日報、商業周刊、天下雜誌讀文章列表頁，取標題、時間、原文網址與內文。</li>
+        <li><b>原文連結</b>每則新聞以原文網址為唯一鍵，沒有網址就不收錄。Google新聞的轉址連結會先解析成原始媒體網址，兩者都存。</li>
+        <li><b>每日排程</b>開盤前 08:00、收盤後 14:30 各跑一次（cron 或 GitHub Actions）。</li>
+        <li><b>去重與儲存</b>以網址與標題雜湊去重，存進 SQLite 或 PostgreSQL。</li>
+        <li><b>詞典分析</b>套用這個頁面的同一套規則，計算每則新聞與每檔個股的分數。</li>
+        <li><b>網站</b>後端提供 API，這個頁面改成讀 API 資料，其餘介面不變。</li>
+        <li><b>鎖定預測</b>新聞抓到當下就把分數與詞典版本存檔，事後不可修改，避免用事後資訊回頭改預測。</li>
+        <li><b>自動驗證</b>每天收盤後抓證交所、櫃買中心收盤價，自動填入「預測驗證」的結果，再依命中率調整詞典權重。</li>
+      </ol>
+      <p class="note" style="margin-top:12px">這個原型在瀏覽器內執行，無法直接連到新聞網站，所以「重新爬取」按鈕是模擬流程。「貼連結分析」則借用 Claude 桌面版的內建瀏覽器開啟網頁並擷取內文；正式版會改由後端爬蟲直接抓取，任何瀏覽器都能用。</p>
+    </div>
+  </section>
+
+  <footer>新聞為五個指定來源的真實報導，摘要以本站文字改寫，完整內容請點標題閱讀原文；部分付費或無法讀取的文章依標題摘要。「重新爬取」與驗證分頁的股價為模擬資料。分析結果僅為關鍵字規則推估，不構成投資建議。</footer>
+</div>
+
+<script>
+// ---------- 公司詞典 ----------
+const STOCKS = [
+ ["2330","台積電",["台積"],["晶圓代工","先進封裝"]],["2303","聯電",[],["晶圓代工"]],["5347","世界",["世界先進"],["晶圓代工"]],
+ ["6770","力積電",[],["晶圓代工","記憶體"]],["2454","聯發科",[],["IC設計","手機"]],["3034","聯詠",[],["IC設計","面板"]],
+ ["2379","瑞昱",[],["IC設計"]],["3711","日月光投控",["日月光"],["封測","先進封裝"]],["6239","力成",[],["封測","記憶體"]],
+ ["2408","南亞科",[],["記憶體"]],["2344","華邦電",[],["記憶體"]],["2337","旺宏",[],["記憶體"]],["3006","晶豪科",[],["記憶體"]],
+ ["2317","鴻海",[],["AI伺服器","電動車"]],["2382","廣達",[],["AI伺服器"]],["3231","緯創",[],["AI伺服器"]],["6669","緯穎",[],["AI伺服器"]],
+ ["2356","英業達",[],["AI伺服器"]],["3706","神達",[],["AI伺服器"]],["2376","技嘉",[],["AI伺服器"]],
+ ["2308","台達電",[],["電源","電動車"]],["2345","智邦",[],["網通"]],["3008","大立光",[],["光學","手機"]],
+ ["2409","友達",[],["面板"]],["3481","群創",[],["面板"]],["1303","南亞",[],["塑化","PCB材料"]],["1301","台塑",[],["塑化"]],
+ ["6505","台塑化",[],["塑化"]],["4958","臻鼎-KY",["臻鼎"],["PCB"]],["2383","台光電",[],["PCB材料"]],["3037","欣興",[],["PCB"]],
+ ["3105","穩懋",[],["CPO","低軌衛星"]],["4979","華星光",[],["CPO"]],["3363","上詮",[],["CPO"]],
+ ["2603","長榮",[],["航運"]],["2609","陽明",[],["航運"]],["2615","萬海",[],["航運"]],["2618","長榮航",[],["航空"]],["2610","華航",["中華航空"],["航空"]],
+ ["2002","中鋼",[],["鋼鐵"]],["1605","華新",[],["電線電纜"]],["2881","富邦金",[],["金融"]],["2882","國泰金",[],["金融"]],
+ ["2891","中信金",[],["金融"]],["2886","兆豐金",[],["金融"]],["2412","中華電",[],["電信"]],["2207","和泰車",[],["汽車"]],
+ ["1802","台玻",[],["玻纖"]],["2327","國巨",[],["被動元件"]],["2492","華新科",[],["被動元件"]],["6488","環球晶",[],["矽晶圓"]],["3532","台勝科",[],["矽晶圓"]],
+ ["3374","精材",[],["封測"]],["6757","台灣虎航",["虎航"],["航空"]],["8021","尖點",[],["PCB"]],["4938","和碩",[],["手機","AI伺服器"]],["3443","創意",[],["IC設計"]],["6147","頎邦",[],["封測"]],["6213","聯茂",[],["PCB材料"]]
+].map(([code,name,alias,sectors])=>({code,name,alias,sectors}));
+const SECTOR_KW = {"晶圓代工":"晶圓代工","先進製程":"晶圓代工","CoWoS":"先進封裝","先進封裝":"先進封裝","封測":"封測",
+ "記憶體":"記憶體","DRAM":"記憶體","NAND":"記憶體","NOR Flash":"記憶體","HBM":"記憶體",
+ "AI伺服器":"AI伺服器","伺服器":"AI伺服器","GB300":"AI伺服器","CPO":"CPO","矽光子":"CPO","光通訊":"CPO",
+ "面板":"面板","貨櫃":"航運","運價":"航運","SCFI":"航運","航空":"航空","鋼價":"鋼鐵","鋼鐵":"鋼鐵",
+ "CCL":"PCB材料","銅箔基板":"PCB材料","PCB":"PCB","載板":"PCB","壽險":"金融","金控":"金融","手機":"手機","電動車":"電動車","低軌衛星":"低軌衛星","石化":"塑化","塑化":"塑化","交換器":"網通","MLCC":"被動元件","被動元件":"被動元件","ABF":"PCB","鑽針":"PCB","半導體":"晶圓代工","矽晶圓":"矽晶圓"};
+
+// ---------- 情緒詞典 ----------
+const BASE_LEX = {
+ "創新高":2.5,"創高":2,"營收成長":2,"年增":1,"季增":1,"漲價":2,"調漲":1.5,"報價上漲":2,"合約價上漲":2,"買超":1,"接單":1,"訂單滿載":2.5,"取得訂單":2,
+ "樂觀":1.5,"上修":2,"擴產":1.5,"優於預期":2,"漲停":1.5,"轉盈":2.5,"配息":1,"得標":1.5,"出貨放量":2,"需求強勁":2,"供不應求":2.5,"受惠":1.5,"跟進":0.5,"獲利成長":2,"看好":1,"訂單":1,"量產":1,"重要進展":1.5,"砍單":-2.5,
+ "衰退":-2,"年減":-1,"季減":-1,"下修":-2,"虧損":-2.5,"跌停":-1.5,"賣超":-1,"庫存調整":-1.5,"保守":-1.5,"低於預期":-2,"罰款":-1.5,
+ "停工":-2,"火災":-2,"關稅":-1.5,"制裁":-2,"跌價":-1.5,"報價下跌":-2,"下跌":-1,"裁員":-1.5,"延後":-1,"審慎":-0.5,"觀望":-0.5,"疲弱":-1.5,"壓力":-1,"油價上漲":-1.5,"成本上升":-1,"回檔":-1,"利空":-1.5,"利多":1.5,"跌破":-1.5,"調高":1.5,"目標價調高":2,"買進":1.5,"加碼":1.5,"逢低布局":1,"抗跌":0.5,"收黑":-1,"大跌":-1.5,"崩跌":-2.5,"重挫":-2,"承壓":-1,"賣壓":-1,"出逃":-1.5,"恐慌":-1,"吃緊":1,"產能過剩":-2,"暴增":2,"跳水":-2,"續創新高":2.5,"油價下跌":1.5,"油價降":1.5,"優於大盤":1.5,"競爭加劇":-1.5,"緩解":1.5,"逆勢":1,"補跌":-1.5,"擴大":0
+};
+let custom = {};
+try{ custom = JSON.parse(localStorage.getItem("radar-lex")||"{}")||{} }catch(e){ custom={} }
+const LEX = ()=>Object.assign({},BASE_LEX,custom);
+const NEGATORS = ["沒有","並非","降低","未","不","無"];
+const NOT_NEG = ["不斷","不少","無論","不僅"];
+const BOOST = ["大幅","強勁","明顯","顯著","持續"];
+
+function buildEntries(){
+  const e=[];
+  for(const [t,w] of Object.entries(LEX())) if(w!==0) e.push({term:t,kind:w>0?"pos":"neg",w});
+  for(const s of STOCKS) for(const t of [s.name,...s.alias]) e.push({term:t,kind:"stock",stock:s});
+  for(const [t,sec] of Object.entries(SECTOR_KW)) e.push({term:t,kind:"sector",sector:sec});
+  return e;
+}
+function findMatches(text,entries){
+  const found=[];
+  for(const en of entries){let i=text.indexOf(en.term);while(i!==-1){found.push({start:i,end:i+en.term.length,...en});i=text.indexOf(en.term,i+1)}}
+  found.sort((a,b)=>(b.end-b.start)-(a.end-a.start)||a.start-b.start);
+  const keep=[];
+  for(const f of found){ if(!keep.some(t=>f.start<t.end&&t.start<f.end)) keep.push(f) }
+  return keep.sort((a,b)=>a.start-b.start);
+}
+function sentenceSpans(text){
+  const out=[];let s=0;
+  for(let i=0;i<text.length;i++){ if("。！？；\n".includes(text[i])){out.push([s,i+1]);s=i+1} }
+  if(s<text.length) out.push([s,text.length]);
+  return out;
+}
+function analyze(title,body){
+  const text=title+"\n"+body;
+  const ms=findMatches(text,buildEntries());
+  const sents=sentenceSpans(text);
+  const sIdx=pos=>sents.findIndex(([a,b])=>pos>=a&&pos<b);
+  const sScore=sents.map(()=>0);
+  const hits=[]; const negators=[];
+  let total=0;
+  for(const m of ms){
+    if(m.kind!=="pos"&&m.kind!=="neg") continue;
+    let w=m.w; let before=text.slice(Math.max(0,m.start-5),m.start); before=before.slice(Math.max(...["，","。","、","；","\n"].map(c=>before.lastIndexOf(c)))+1);
+    const negW=NEGATORS.find(n=>before.includes(n)&&!NOT_NEG.some(x=>before.includes(x)));
+    let note="";
+    if(negW){w=-w;note="否定";negators.push({start:m.start-before.length+before.lastIndexOf(negW),end:m.start-before.length+before.lastIndexOf(negW)+negW.length})}
+    const before4=text.slice(Math.max(0,m.start-4),m.start);
+    if(BOOST.some(b=>before4.includes(b))){w*=1.5;note+=(note?"、":"")+"加強"}
+    if(m.start<title.length) w*=1.5;
+    m.eff=w; total+=w; const si=sIdx(m.start); if(si>=0) sScore[si]+=w;
+    hits.push({term:m.term,w,note});
+  }
+  // 個股影響
+  const imp=new Map();
+  const direct=ms.filter(m=>m.kind==="stock");
+  for(const m of direct){
+    const si=sIdx(m.start); const k=m.stock.code;
+    const cur=imp.get(k)||{stock:m.stock,type:"direct",sents:new Set()};
+    cur.sents.add(si); imp.set(k,cur);
+  }
+  for(const v of imp.values()){
+    let sc=0; for(const si of v.sents) sc+=sScore[si];
+    if(Math.abs(sc)<0.01) sc=total*0.5;
+    v.score=sc; v.keySent=[...v.sents].sort((a,b)=>Math.abs(sScore[b])-Math.abs(sScore[a]))[0];
+  }
+  const secHits=new Map();
+  for(const m of ms.filter(m=>m.kind==="sector")){const si=sIdx(m.start);const c=secHits.get(m.sector)||new Set();c.add(si);secHits.set(m.sector,c)}
+  for(const [sec,set] of secHits){
+    let sc=0; for(const si of set) sc+=sScore[si];
+    if(Math.abs(sc)<0.01) sc=total; sc*=0.5;
+    if(Math.abs(sc)<0.5) continue;
+    const members=STOCKS.filter(s=>s.sectors.includes(sec)&&!imp.has(s.code)).slice(0,4);
+    for(const s of members) imp.set(s.code,{stock:s,type:"sector",sector:sec,score:sc});
+  }
+  const label= total>=1?"pos":total<=-1?"neg":"neu";
+  return {total,label,hits,impacts:[...imp.values()].sort((a,b)=>Math.abs(b.score)-Math.abs(a.score)),ms,negators,text,sents,sScore};
+}
+const LABEL={pos:"利多",neg:"利空",neu:"中性"};
+const strength=s=>{const a=Math.abs(s);return a>=4?"高":a>=2?"中":"低"};
+const fmt=n=>(n>0?"+":"")+n.toFixed(1);
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function highlight(text,offset,ms,negs){
+  const end=offset+text.length; let out="",p=offset;
+  const all=[...ms.map(m=>({...m,cls:"k-"+m.kind})),...negs.map(n=>({...n,cls:"k-negator"}))]
+    .filter(m=>m.start>=offset&&m.end<=end).sort((a,b)=>a.start-b.start);
+  for(const m of all){ if(m.start<p) continue; out+=esc(text.slice(p-offset,m.start-offset))+`<mark class="${m.cls}">${esc(text.slice(m.start-offset,m.end-offset))}</mark>`; p=m.end }
+  return out+esc(text.slice(p-offset));
+}
+function reason(v,a){
+  const dir=v.score>0?"偏多":v.score<0?"偏空":"中性";
+  if(v.type==="direct"){
+    const [s,e]=a.sents[v.keySent]||[0,0];
+    const sent=a.text.slice(s,e).replace(/\n/g,"").trim();
+    return `新聞直接提及，${dir}。關鍵句：「${esc(sent.length>60?sent.slice(0,60)+"…":sent)}」`;
+  }
+  return `未直接提及，屬「${esc(v.sector)}」族群，產業連動${dir}（取一半分數）`;
+}
+function cls(s){return s>0.01?"up":s<-0.01?"down":"flat"}
+function impactsHTML(a){
+  if(!a.impacts.length) return `<div class="note">沒有比對到上市櫃公司或產業關鍵字。</div>`;
+  return `<div class="impacts">${a.impacts.map(v=>`<div class="imp"><span class="nm"><b>${esc(v.stock.name)}</b> <span class="code">${v.stock.code}</span></span><span class="num ${cls(v.score)}">${fmt(v.score)}・${strength(v.score)}</span><span class="reason">${reason(v,a)}</span></div>`).join("")}</div>`;
+}
+function hitsHTML(a){
+  if(!a.hits.length) return "命中詞：無";
+  return "命中詞："+a.hits.map(h=>`<span class="${h.w>0?"up":"down"}">${esc(h.term)} ${fmt(h.w)}${h.note?"（"+h.note+"）":""}</span>`).join("、");
+}
+
+// ---------- 新聞資料：五個來源的真實報導，摘要為改寫，點標題可看原文 ----------
+const SOURCES = {yahoo:"Yahoo奇摩股市",google:"Google新聞",bw:"商業周刊",cw:"天下雜誌",udn:"經濟日報"};
+const NEWS = [
+ {src:"yahoo",via:"卡優新聞網",d:"2026-10-26",time:"13:37",t:"台股週報》外資再砍2300億　半導體族群承壓",url:"https://tw.news.yahoo.com/%E5%8F%B0%E8%82%A1%E9%80%B1%E5%A0%B1-%E5%A4%96%E8%B3%87%E5%86%8D%E7%A0%8D2300%E5%84%84-%E5%8D%8A%E5%B0%8E%E9%AB%94%E6%97%8F%E7%BE%A4%E6%89%BF%E5%A3%93-173735309.html",b:"加權指數上週在颱風假縮短的四個交易日內下跌約 1,070 點，外資賣超逾 2,300 億元。外資賣超最多的是力積電、台積電與聯電，半導體族群承壓。"},
+ {src:"yahoo",via:"三立新聞網",d:"2026-10-26",time:"15:15",t:"連假後台股補跌千點？哲哲點名6檔「可逢低布局」",url:"https://tw.news.yahoo.com/%E9%80%A3%E5%81%87%E5%BE%8C%E5%8F%B0%E8%82%A1%E8%A3%9C%E8%B7%8C%E5%8D%83%E9%BB%9E-%E5%93%B2%E5%93%B2%E9%BB%9E%E5%90%8D6%E6%AA%94-%E5%8F%AF%E9%80%A2%E4%BD%8E%E5%B8%83%E5%B1%80-191500404.html",b:"外資 10 月 22 日創單日賣超紀錄，連假期間美股半導體走弱，市場擔心台股開盤補跌。分析師認為恐慌賣壓可望緩解，點名國巨、華新科、環球晶、台勝科、精材、鴻海可逢低布局。"},
+ {src:"udn",d:"2026-10-25",time:"21:55",t:"高盛：緯穎第4季營收將年增60% 受惠四大動能 目標價調高到4,000元",url:"https://money.udn.com/money/story/5607/9836689",b:"高盛預估緯穎第四季營收年增逾六成、季增約 8%，受惠 ASIC AI伺服器需求與新 GPU 機櫃量產等動能，將目標價調高並維持買進評等。"},
+ {src:"udn",d:"2026-10-24",time:"17:25",t:"AI投資漏看這一環？高層數PCB讓鑽針耗用倍增 它營收連7月創高、明年EPS上看30元",url:"https://money.udn.com/money/story/5607/9833572",b:"AI伺服器使用的高層數 PCB 大幅增加鑽針耗用，鑽針廠尖點 9 月營收年增 98%、連續七個月創新高，分析師看好明年獲利成長。"},
+ {src:"udn",d:"2026-10-24",time:"12:55",t:"航空股布局時機到了？2027年油價降 法人看好這兩檔",url:"https://money.udn.com/money/story/5607/9834906",b:"法人指出第四季油價上漲，航空公司獲利面臨壓力。但預估 2027 年油價下跌約兩成，獲利可望回升，給予華航、台灣虎航買進評等，長榮航維持中立。"},
+ {src:"udn",d:"2026-10-24",time:"11:49",t:"聯發科連四周收黑、4,000元關卡拉警報！台股十大權值股誰逆勢抗跌？",url:"https://money.udn.com/money/story/5607/9834831",b:"颱風假縮短的一週內大盤下跌 2.27%，聯發科週跌 5.65%、連四週收黑。外資賣超台積電、台達電與聯發科。十大權值股中僅鴻海逆勢上漲，獲法人買超。"},
+ {src:"cw",d:"2026-10-23",time:"",t:"天下晨間新聞：費半崩跌6.7%！黃仁勳說出市場最怕的事",url:"https://www.cw.com.tw/article/5143403",b:"費城半導體指數崩跌 6.7%，台積電 ADR 跌 4.5%，市場對 AI 投資與融資能力的疑慮升高。台股因颱風休市，恢復交易後恐面臨科技股賣壓。"},
+ {src:"cw",d:"2026-10-22",time:"",t:"史上最大外資出逃、台幣淪最弱亞幣 央行總裁楊金龍的最新難題是什麼？",url:"https://www.cw.com.tw/article/5143374",b:"天下雜誌分析外資創紀錄賣超台股、新台幣成為表現最弱的亞洲貨幣，央行面臨新的政策難題。（本則依標題摘要）"}
+];
+const EXTRA = [
+ {src:"udn",d:"2026-10-26",time:"20:23",t:"大摩：欣興與輝達的協議有助降低潛在產能過剩風險 重申目標價1,775元",url:"https://money.udn.com/money/story/5607/9838135",b:"摩根士丹利指出欣興與輝達簽訂產能保留協議，可降低產能過剩風險，並預估明年 ABF 載板報價上漲逾兩成五、供給持續吃緊，重申優於大盤評等。美銀也調高欣興目標價。"},
+ {src:"yahoo",via:"三立新聞網",d:"2026-10-26",time:"17:35",t:"【盤前】外資投信爭搶 大舉加碼「這檔」2.8萬張！20萬股東嗨翻天",url:"https://tw.news.yahoo.com/%E7%9B%A4%E5%89%8D-%E5%A4%96%E8%B3%87%E6%8A%95%E4%BF%A1%E7%88%AD%E6%90%B6-%E5%A4%A7%E8%88%89%E5%8A%A0%E7%A2%BC-%E9%80%99%E6%AA%94-2-213500143.html",b:"10 月 22 日大盤下跌 846 點。在賣壓中，台玻逆勢獲外資與投信合計買超約 2.8 萬張。"}
+];
+const OLDER = [
+ {src:"udn",d:"2026-10-16",time:"00:00",t:"AI需求把MLCC、電阻吃緊 華新科B/B升至1.8 轉單、漲價雙利多啟動",url:"https://money.udn.com/money/story/5607/9816882",b:"AI伺服器與高速通訊帶動 MLCC 與電阻需求吃緊，華新科接單出貨比升至 1.8，客戶轉單與漲價可望推升營收，並持續擴產。"},
+ {src:"bw",d:"2026-10-15",time:"",t:"南亞科淨利暴增，股價為何跳水？破解「長鑫恐慌」：2028年才是關鍵戰場",url:"https://www.businessweekly.com.tw/business/blog/3023445",b:"商業周刊分析南亞科獲利大幅成長，股價卻重挫，主因市場擔心中國長鑫的競爭壓力。（本則依標題摘要）"},
+ {src:"udn",d:"2026-10-15",time:"18:02",t:"台股大跌1655點 金管會：跌幅亞洲中段、密切注意",url:"https://money.udn.com/money/story/5612/9817314",b:"受美國通膨疑慮與晶片股賣壓拖累，台股大跌 1,655 點、跌幅 3.41%，半導體族群最弱。"},
+ {src:"udn",d:"2026-10-13",time:"14:18",t:"上市櫃公司9月營收續締新猷 法人建議優先關注這幾檔",url:"https://money.udn.com/money/story/5607/9811764",b:"上市櫃公司 9 月營收續創新高，近八成科技族群第三季營收達標或優於預期。法人建議逢回優先關注和碩、創意、緯穎、頎邦、聯茂、台光電與欣興。"},
+ {src:"google",via:"自由財經",d:"2026-07-28",time:"14:53",t:"長鑫掛牌添壓力？南亞科跌停鎖死 股民悲喊「跌到懷疑人生」",url:"https://ec.ltn.com.tw/article/breakingnews/5520293",b:"中國 DRAM 廠長鑫 A 股掛牌首日大漲，市場擔心競爭加劇，南亞科開盤即跌停，收盤仍有大量賣單掛在跌停價。"}
+];
+const hasUrl=n=>/^https?:\/\/\S+$/.test(n.url||"");
+const srcLabel=n=>(SOURCES[n.src]||n.src||"未知來源")+(n.via?`・轉載自 ${n.via}`:"");
+const linkTitle=(n,inner)=>hasUrl(n)?`<a class="orig" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">${inner}</a>`:inner;
+
+let srcF="all", items=[], filt="all", q="", stockFilter=null, crawled=false;
+function analyzeAll(){ items=NEWS.map((n,i)=>({...n,id:i,a:analyze(n.t,n.b)})) }
+
+function renderFeed(){
+  const list=items.filter(it=>(filt==="all"||it.a.label===filt)
+    &&(!q||(it.t+it.b).includes(q)||it.a.impacts.some(v=>v.stock.code.includes(q)||v.stock.name.includes(q)))
+    &&(srcF==="all"||it.src===srcF)&&(!stockFilter||it.a.impacts.some(v=>v.stock.code===stockFilter)));
+  const fn=document.getElementById("filtnote");
+  if(stockFilter){const s=STOCKS.find(s=>s.code===stockFilter);fn.hidden=false;fn.innerHTML=`只顯示影響 <b>${esc(s.name)} ${s.code}</b> 的新聞 · <button id="clr">清除</button>`;document.getElementById("clr").onclick=()=>{stockFilter=null;renderAll()}}else fn.hidden=true;
+  document.getElementById("feed").innerHTML = list.length? list.map(it=>{
+    const a=it.a; const tl=it.t.length;
+    return `<article class="news ${a.label}${it.fresh?" fresh":""}"><div class="stripe"></div><div class="nbody">
+      <div class="meta"><span class="pill ${a.label}">${LABEL[a.label]}</span><span class="score ${cls(a.total)}">${fmt(a.total)}</span><span>影響程度 ${strength(a.total)}</span><span>${esc(srcLabel(it))}</span><span>${it.d.slice(5).replace("-","/")} ${it.time}</span>${hasUrl(it)?`<a class="origlink" href="${esc(it.url)}" target="_blank" rel="noopener noreferrer">閱讀原文 ↗</a>`:`<span class="err">缺少原文連結</span>`}</div>
+      <h3>${linkTitle(it,highlight(it.t,0,a.ms,a.negators))}</h3>
+      <p class="text">${highlight(it.b,tl+1,a.ms,a.negators)}</p>
+      <div class="tags">${a.impacts.slice(0,6).map(v=>`<span class="stag"><span class="${cls(v.score)}">${v.score>0?"▲":v.score<0?"▼":"–"}</span>${esc(v.stock.name)}<span class="code">${v.stock.code}</span></span>`).join("")}</div>
+      <details class="why"><summary>為什麼這樣判斷</summary>${impactsHTML(a)}<div class="hits">${hitsHTML(a)}</div></details>
+    </div></article>`}).join("") : `<div class="empty">沒有符合條件的新聞</div>`;
+}
+function renderSide(){
+  const c={pos:0,neg:0,neu:0}; items.forEach(i=>c[i.a.label]++); const n=items.length||1;
+  document.getElementById("dist").innerHTML=`<span style="width:${c.pos/n*100}%;background:var(--up)"></span><span style="width:${c.neu/n*100}%;background:var(--flat)"></span><span style="width:${c.neg/n*100}%;background:var(--down)"></span>`;
+  document.getElementById("distnums").innerHTML=`<span class="up"><b>${c.pos}</b>利多</span><span class="flat"><b>${c.neu}</b>中性</span><span class="down"><b>${c.neg}</b>利空</span>`;
+  const agg=new Map();
+  for(const it of items) for(const v of it.a.impacts){const g=agg.get(v.stock.code)||{stock:v.stock,score:0,n:0};g.score+=v.score;g.n++;agg.set(v.stock.code,g)}
+  const arr=[...agg.values()]; const max=Math.max(1,...arr.map(g=>Math.abs(g.score)));
+  const row=g=>`<li><button aria-pressed="${stockFilter===g.stock.code}" data-code="${g.stock.code}"><span class="code">${g.stock.code}</span><span>${esc(g.stock.name)} <span class="code">${g.n} 則</span></span><span class="bar"><span style="width:${Math.abs(g.score)/max*100}%;background:var(--${g.score>0?"up":"down"})"></span></span><span class="num ${cls(g.score)}">${fmt(g.score)}</span></button></li>`;
+  document.getElementById("rankUp").innerHTML=arr.filter(g=>g.score>0).sort((a,b)=>b.score-a.score).slice(0,7).map(row).join("");
+  document.getElementById("rankDown").innerHTML=arr.filter(g=>g.score<0).sort((a,b)=>a.score-b.score).slice(0,7).map(row).join("");
+  document.querySelectorAll(".rank button").forEach(b=>b.onclick=()=>{stockFilter=stockFilter===b.dataset.code?null:b.dataset.code;renderAll()});
+  document.getElementById("count").textContent=items.length;
+}
+function renderAll(){renderFeed();renderSide()}
+function runTry(){
+  const t=document.getElementById("tTitle").value.trim(), b=document.getElementById("tBody").value.trim();
+  const a=analyze(t,b);
+  document.getElementById("tOut").innerHTML=`<article class="news ${a.label}"><div class="stripe"></div><div class="nbody">
+    <div class="meta"><span class="pill ${a.label}">${LABEL[a.label]}</span><span class="score ${cls(a.total)}">${fmt(a.total)}</span><span>影響程度 ${strength(a.total)}</span></div>
+    <h3>${tryMeta.url?linkTitle({url:tryMeta.url},highlight(t,0,a.ms,a.negators)):highlight(t,0,a.ms,a.negators)}</h3><p class="text">${highlight(b,t.length+1,a.ms,a.negators)}</p>
+    <h2 style="margin-top:14px">受影響個股</h2>${impactsHTML(a)}<div class="hits">${hitsHTML(a)}</div>
+    ${tryMeta.url?`<div class="row" style="margin-top:12px"><button class="btn ghost" id="tAdd">加入新聞列表</button><span class="note" id="addMsg"></span></div>`:""}</div></article>`;
+  const ad=document.getElementById("tAdd"); if(ad) ad.onclick=addToFeed;
+}
+function renderLex(){
+  const L=LEX(); const ent=Object.entries(L).filter(([,w])=>w!==0);
+  const chip=([t,w])=>`<span class="${w>0?"p":"n"}">${esc(t)}<small>${fmt(w)}</small>${custom[t]!==undefined?`<button data-del="${esc(t)}" aria-label="刪除 ${esc(t)}">×</button>`:""}</span>`;
+  document.getElementById("lexPos").innerHTML=ent.filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]).map(chip).join("");
+  document.getElementById("lexNeg").innerHTML=ent.filter(e=>e[1]<0).sort((a,b)=>a[1]-b[1]).map(chip).join("");
+  document.getElementById("lexSec").innerHTML=Object.entries(SECTOR_KW).map(([k,s])=>`<span class="c">${esc(k)} → ${esc(s)}</span>`).join("");
+  document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{delete custom[b.dataset.del];saveLex()});
+}
+function saveLex(){ try{localStorage.setItem("radar-lex",JSON.stringify(custom))}catch(e){} renderLex(); reanalyze() }
+function reanalyze(){ items=items.map(it=>({...it,a:analyze(it.t,it.b)})); renderAll(); runTry(); if(VDATA) renderVal() }
+
+document.getElementById("nwAdd").onclick=()=>{
+  const w=document.getElementById("nw").value.trim(), s=parseFloat(document.getElementById("nwt").value), msg=document.getElementById("nwMsg");
+  if(!w){msg.textContent="請先輸入詞彙。";return}
+  if(!isFinite(s)||s===0){msg.textContent="分數不能是 0，請輸入 −5 到 5 之間的數字。";return}
+  custom[w]=Math.max(-5,Math.min(5,s)); document.getElementById("nw").value=""; msg.textContent=`已加入「${w}」（${fmt(custom[w])}），新聞已重新分析。`; saveLex();
+};
+document.getElementById("srcSel").onchange=e=>{srcF=e.target.value;renderFeed()};
+document.querySelectorAll(".toolbar .chip").forEach(b=>b.onclick=()=>{filt=b.dataset.f;document.querySelectorAll(".toolbar .chip").forEach(x=>x.setAttribute("aria-pressed",x===b));renderFeed()});
+document.getElementById("q").oninput=e=>{q=e.target.value.trim();renderFeed()};
+document.getElementById("tRun").onclick=runTry;
+document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("nav.tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));
+  ["feed","try","lex","val","arch"].forEach(t=>document.getElementById("tab-"+t).hidden=t!==b.dataset.tab);
+});
+document.getElementById("crawl").onclick=async()=>{
+  const btn=document.getElementById("crawl"), log=document.getElementById("log"); btn.disabled=true; log.hidden=false; log.innerHTML="";
+  const steps=["Yahoo奇摩股市：讀取台股新聞 RSS…（模擬）","Google新聞：讀取「台股」搜尋 RSS，解析出原始媒體網址…（模擬）","經濟日報：讀取證券即時新聞列表…（模擬）","商業周刊：讀取財經頻道文章列表…（模擬）","天下雜誌：讀取今日最新文章列表…（模擬）","檢查每則新聞都有原文網址，缺網址者不收錄","以原文網址去除重複新聞",crawled?"沒有新的新聞":"新增 2 則新聞，開始詞典分析","完成"];
+  for(const s of steps){ const d=document.createElement("div"); d.textContent=s; log.appendChild(d); log.scrollTop=log.scrollHeight; await new Promise(r=>setTimeout(r,380)) }
+  if(!crawled){ crawled=true; items.forEach(i=>i.fresh=false); const add=EXTRA.map((n,i)=>({...n,id:100+i,fresh:true,a:analyze(n.t,n.b)})); items=[...add,...items]; }
+  const d=new Date(); document.getElementById("updated").textContent=`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,"0")}/${String(d.getDate()).padStart(2,"0")} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+  renderAll(); btn.disabled=false;
+};
+// ---------- 預測驗證 ----------
+
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const ymd=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+function tradingDays(from,to){const out=[],d=new Date(from+"T00:00:00"),e=new Date(to+"T00:00:00");while(d<=e){const w=d.getDay();if(w&&w<6)out.push(ymd(d));d.setDate(d.getDate()+1)}return out}
+function baseIndex(days,date,time){
+  const after=(time||"08:00")>="13:30"; let idx=-1;
+  for(let i=0;i<days.length;i++){ if(days[i]<date||(after&&days[i]===date)) idx=i; else break }
+  return idx;
+}
+function buildDemo(){
+  const saved=custom; custom={};
+  const days=tradingDays("2026-07-01","2026-10-27"), rnd=mulberry32(20261027);
+  const gauss=()=>{let u=0;while(!u)u=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*rnd())};
+  const news=[...NEWS,...EXTRA,...OLDER];
+  const shock={}; STOCKS.forEach(s=>shock[s.code]=days.map(()=>0));
+  for(const n of news){
+    const bi=baseIndex(days,n.d,n.time), a=analyze(n.t,n.b);
+    for(const v of a.impacts){ if(Math.abs(v.score)<1||bi<0) continue;
+      const r=rnd(), dir=r<0.66?Math.sign(v.score):r<0.84?0:-Math.sign(v.score);
+      const mag=Math.min(0.07,0.0045*Math.abs(v.score))*(0.6+rnd()*0.8);
+      [0.5,0.3,0.2].forEach((w,k)=>{ if(bi+1+k<days.length) shock[v.stock.code][bi+1+k]+=dir*mag*w });
+    }
+  }
+  const mret=days.map((_,i)=>i?0.0005+0.009*gauss():0);
+  const prices={TAIEX:[]}; let m=27000; days.forEach((_,i)=>{m*=1+mret[i];prices.TAIEX.push(+m.toFixed(2))});
+  for(const s of STOCKS){ let c=20+Math.round(rnd()*480); const beta=0.7+rnd()*0.6; prices[s.code]=days.map((_,i)=>{ if(i) c*=1+beta*mret[i]+0.011*gauss()+shock[s.code][i]; return +c.toFixed(2) }) }
+  custom=saved;
+  return {days,prices,news,demo:true};
+}
+let VDATA=null, vMine=null, vH=3, vBase="ex", vScope="all", vRowFilt="all";
+function evaluate(ds,h,excess,thr,scope){
+  const rows=[], M=ds.prices.TAIEX;
+  for(const n of ds.news){
+    const a=analyze(n.t,n.b), bi=baseIndex(ds.days,n.d,n.time);
+    for(const v of a.impacts){
+      if(scope==="direct"&&v.type!=="direct") continue;
+      const pred=v.score>=1?"up":v.score<=-1?"down":"flat", ser=ds.prices[v.stock.code];
+      const r={n,v,pred,bi,status:"done"};
+      if(!ser||bi<0||ser[bi]==null) r.status="nodata";
+      else if(bi+h>=ds.days.length||ser[bi+h]==null) {r.status="wait";r.left=bi+h-ds.days.length+1}
+      else{
+        r.p0=ser[bi]; r.p1=ser[bi+h]; r.ret=r.p1/r.p0-1;
+        const useEx=excess&&M&&M[bi]!=null&&M[bi+h]!=null; r.ex=useEx?r.ret-(M[bi+h]/M[bi]-1):r.ret;
+        r.act=r.ex>thr?"up":r.ex<-thr?"down":"flat"; r.hit=pred!=="flat"?pred===r.act:null;
+      }
+      rows.push(r);
+    }
+  }
+  return rows;
+}
+function eventCurve(ds,rows,dir,excess){
+  const ks=[];for(let k=-3;k<=10;k++)ks.push(k);
+  const M=ds.prices.TAIEX;
+  return ks.map(k=>{let sum=0,c=0;for(const r of rows){ if(r.pred!==dir||r.status==="nodata")continue; const ser=ds.prices[r.v.stock.code],i=r.bi+k;
+    if(i<0||i>=ds.days.length||ser[i]==null)continue; let x=ser[i]/ser[r.bi]-1; if(excess&&M&&M[i]!=null&&M[r.bi]!=null)x-=M[i]/M[r.bi]-1; sum+=x;c++}
+    return {k,y:c?sum/c:null,c}});
+}
+const pct=(x,d=1)=>x==null||isNaN(x)?"—":(x>0?"+":"")+(x*100).toFixed(d)+"%";
+const rate=(a)=>a.length?a.filter(r=>r.hit).length/a.length:null;
+function chartSVG(up,down,h){
+  const W=620,H=260,L=48,R=16,T=14,B=34;
+  const ys=[...up,...down].map(p=>p.y).filter(y=>y!=null); let mx=Math.max(0.01,...ys.map(Math.abs)); mx=Math.ceil(mx*100)/100;
+  const x=k=>L+(k+3)/13*(W-L-R), y=v=>T+(mx-v)/(2*mx)*(H-T-B);
+  let g="";
+  const step=mx>0.04?0.02:0.01;
+  for(let v=-mx;v<=mx+1e-9;v+=step){ const yy=y(v); g+=`<line x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}" stroke="var(--line)" stroke-width="${Math.abs(v)<1e-9?1.5:1}"/><text x="${L-6}" y="${yy+4}" text-anchor="end">${(v*100).toFixed(0)}%</text>` }
+  for(let k=-3;k<=10;k++){ g+=`<text x="${x(k)}" y="${H-B+16}" text-anchor="middle">${k===0?"基準":k>0?"+"+k:k}</text>` }
+  g+=`<line x1="${x(0)}" x2="${x(0)}" y1="${T}" y2="${H-B}" stroke="var(--muted)" stroke-dasharray="3 3"/>`;
+  g+=`<rect x="${x(0)}" y="${T}" width="${x(h)-x(0)}" height="${H-T-B}" fill="var(--accent-soft)" opacity=".6"/>`;
+  const line=(pts,col,name)=>{const p=pts.filter(q=>q.y!=null); if(!p.length)return ""; const d=p.map((q,i)=>(i?"L":"M")+x(q.k).toFixed(1)+" "+y(q.y).toFixed(1)).join(" "); const last=p[p.length-1];
+    return `<path d="${d}" fill="none" stroke="${col}" stroke-width="2.2"/><circle cx="${x(last.k)}" cy="${y(last.y)}" r="3.5" fill="${col}"/><text x="${x(last.k)-6}" y="${y(last.y)+(last.y>=0?-8:16)}" text-anchor="end" style="fill:${col};font-weight:600">${name} ${pct(last.y)}</text>`};
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="新聞前後平均累積報酬">${g}${line(up,"var(--up)","利多組")}${line(down,"var(--down)","利空組")}<text x="${W-R}" y="${H-4}" text-anchor="end">交易日（相對基準日）</text></svg>`;
+}
+function renderVal(){
+  const ds=vMine||VDATA, thr=(parseFloat(document.getElementById("vThr").value)||0)/100, ex=vBase==="ex";
+  const rows=evaluate(ds,vH,ex,thr,vScope);
+  const done=rows.filter(r=>r.status==="done"&&r.pred!=="flat"), wait=rows.filter(r=>r.status==="wait");
+  const ups=done.filter(r=>r.pred==="up"), dns=done.filter(r=>r.pred==="down");
+  const noM=ex&&!ds.prices.TAIEX;
+  document.getElementById("vWarn").innerHTML= ds.demo
+    ? "目前是<b>示範資料</b>：新聞為真實報導，但股價為程式模擬，命中率只用來展示功能，不代表詞典的真實準確度。切到「我的資料」可匯入真實收盤價。"
+    : `目前使用你匯入的資料：${ds.news.length} 則新聞、${Object.keys(ds.prices).length} 檔價格、${ds.days[0]} 至 ${ds.days[ds.days.length-1]}。`+(noM?" <b>價格資料沒有大盤（TAIEX），已改用個股漲跌。</b>":"");
+  const tile=(k,v,s,c="")=>`<div class="tile"><div class="k">${k}</div><div class="v ${c}">${v}</div><div class="s">${s}</div></div>`;
+  const R=rate(done),RU=rate(ups),RD=rate(dns);
+  const fr=x=>x==null?"—":(x*100).toFixed(0)+"%";
+  const avg=a=>a.length?a.reduce((s,r)=>s+r.ex,0)/a.length:null;
+  document.getElementById("vTiles").innerHTML=
+    tile("整體命中率",fr(R),`${done.filter(r=>r.hit).length} / ${done.length} 筆有方向的預測`)+
+    tile("利多命中率",fr(RU),`利多組平均 ${pct(avg(ups))}`,"up")+
+    tile("利空命中率",fr(RD),`利空組平均 ${pct(avg(dns))}`,"down")+
+    tile("多空報酬差",pct(avg(ups)!=null&&avg(dns)!=null?avg(ups)-avg(dns):null),"差距越大，分數越有鑑別力")+
+    tile("待驗證",wait.length,`還沒滿 ${vH} 個交易日`);
+  const up=eventCurve(ds,rows,"up",ex&&!noM), dn=eventCurve(ds,rows,"down",ex&&!noM);
+  document.getElementById("vChartNote").textContent=`${ex&&!noM?"扣除大盤後的":"個股"}累積報酬，基準日 = 新聞前最後一個收盤。藍底區間為目前的觀察期間（${vH} 日）。`;
+  document.getElementById("vChart").innerHTML=chartSVG(up,dn,vH);
+  document.getElementById("vStr").innerHTML=["低","中","高"].map(s=>{const a=done.filter(r=>strength(r.v.score)===s),x=rate(a);
+    return `<div class="sbar"><span>${s}影響</span><span class="track"><span style="width:${(x||0)*100}%"></span><i></i></span><span class="num">${fr(x)}・${a.length} 筆</span></div>`}).join("")+`<div class="note">虛線為 50%。</div>`;
+  document.getElementById("vRetH").textContent=ex&&!noM?"超額報酬":"漲跌幅";
+  const DIR={up:"▲ 漲",down:"▼ 跌",flat:"– 持平"};
+  const list=rows.filter(r=>r.status!=="nodata").filter(r=>vRowFilt==="all"||(vRowFilt==="hit"&&r.hit===true)||(vRowFilt==="miss"&&r.hit===false)||(vRowFilt==="wait"&&r.status==="wait"))
+    .sort((a,b)=>b.n.d.localeCompare(a.n.d)||Math.abs(b.v.score)-Math.abs(a.v.score));
+  const nod=rows.filter(r=>r.status==="nodata").length;
+  document.getElementById("vRows").innerHTML=list.map(r=>{
+    const res=r.status==="wait"?`<span class="res wait">等待 ${r.left} 日</span>`:r.pred==="flat"?`<span class="res wait">中性・不計</span>`:r.hit?`<span class="res ok">命中</span>`:`<span class="res bad">未命中</span>`;
+    return `<tr><td class="n">${r.n.d.slice(5).replace("-","/")} ${r.n.time||""}</td><td class="ttl">${linkTitle(r.n,esc(r.n.t))}<div class="code">${esc(srcLabel(r.n))}</div></td><td><b>${esc(r.v.stock.name)}</b> <span class="code">${r.v.stock.code}</span>${r.v.type==="sector"?`<div class="code">產業連動</div>`:""}</td>
+      <td class="${cls(r.v.score)}">${r.pred==="up"?"利多":r.pred==="down"?"利空":"中性"} <span class="code">${fmt(r.v.score)}</span></td>
+      <td class="n">${r.status==="done"?`${r.p0} → ${r.p1}`:"—"}</td><td class="n ${r.ex!=null?cls(r.ex):""}">${r.status==="done"?pct(r.ex,2):"—"}${r.status==="done"?`<div class="code">${DIR[r.act]}</div>`:""}</td><td>${res}</td></tr>`}).join("")
+    || `<tr><td colspan="7" class="note" style="text-align:center;padding:20px">沒有符合條件的資料</td></tr>`;
+  if(nod) document.getElementById("vRows").insertAdjacentHTML("beforeend",`<tr><td colspan="7" class="note">另有 ${nod} 筆因缺少該股價格或新聞早於價格資料而略過。</td></tr>`);
+}
+function parseCSV(txt){const rows=[];let row=[],f="",q=false;txt=txt.replace(/^﻿/,"");
+  for(let i=0;i<txt.length;i++){const c=txt[i];
+    if(q){if(c==='"'){if(txt[i+1]==='"'){f+='"';i++}else q=false}else f+=c}
+    else if(c==='"')q=true; else if(c===","){row.push(f);f=""}
+    else if(c==="\n"||c==="\r"){if(c==="\r"&&txt[i+1]==="\n")i++;row.push(f);rows.push(row);row=[];f=""} else f+=c}
+  if(f||row.length){row.push(f);rows.push(row)} return rows.map(r=>r.map(x=>x.trim())).filter(r=>r.some(x=>x))}
+function normDate(s){const m=s.match(/^(\d{2,4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/); if(!m)return null; let y=+m[1]; if(y<1000)y+=1911; return y+"-"+m[2].padStart(2,"0")+"-"+m[3].padStart(2,"0")}
+function buildMine(ptxt,ntxt){
+  const errs=[], raw={};
+  parseCSV(ptxt).forEach((r,i)=>{ const d=normDate(r[0]||""); const p=parseFloat((r[2]||"").replace(/,/g,""));
+    if(!d||!isFinite(p)){ if(i>0)errs.push(`價格第 ${i+1} 列無法讀取`); return }
+    let code=(r[1]||"").replace(/\s/g,""); if(/^(TAIEX|加權指數|大盤|加權)$/i.test(code))code="TAIEX";
+    (raw[code]=raw[code]||{})[d]=p });
+  const news=[]; const SRCMAP={"yahoo":"yahoo","yahoo奇摩":"yahoo","yahoo奇摩股市":"yahoo","google":"google","google新聞":"google","商業周刊":"bw","商周":"bw","天下雜誌":"cw","天下":"cw","經濟日報":"udn"};
+  parseCSV(ntxt).forEach((r,i)=>{ const d=normDate(r[0]||""); if(!d){if(i>0)errs.push(`新聞第 ${i+1} 列日期無法讀取`);return}
+    let k=1,time=""; if(/^\d{1,2}:\d{2}$/.test(r[1]||"")){time=r[1].padStart(5,"0");k=2}
+    const src=SRCMAP[(r[k]||"").toLowerCase().replace(/\s/g,"")], t=r[k+1], url=r[k+2], b=r[k+3]||"";
+    if(!src){errs.push(`新聞第 ${i+1} 列來源不在五個指定來源內`);return}
+    if(!t){errs.push(`新聞第 ${i+1} 列缺少標題`);return}
+    if(!/^https?:\/\/\S+$/.test(url||"")){errs.push(`新聞第 ${i+1} 列缺少原文網址`);return}
+    news.push({d,time,src,t,url,b}) });
+  const days=[...new Set(Object.values(raw).flatMap(o=>Object.keys(o)))].sort();
+  const prices={}; for(const [c,o] of Object.entries(raw)) prices[c]=days.map(d=>o[d]??null);
+  return {ds:{days,prices,news,demo:false},errs};
+}
+function readFileTo(inputId,taId){document.getElementById(inputId).onchange=e=>{const f=e.target.files[0];if(!f)return;const fr=new FileReader();fr.onload=()=>{document.getElementById(taId).value=fr.result};fr.readAsText(f,"utf-8")}}
+readFileTo("pFile","pText"); readFileTo("nFile","nText");
+function seg(id,cb){document.querySelectorAll(`#${id} button`).forEach(b=>b.onclick=()=>{document.querySelectorAll(`#${id} button`).forEach(x=>x.setAttribute("aria-pressed",x===b));cb(b.dataset.v)})}
+seg("vH",v=>{vH=+v;renderVal()}); seg("vB",v=>{vBase=v;renderVal()}); seg("vS",v=>{vScope=v;renderVal()});
+seg("vSrc",v=>{document.getElementById("vMine").hidden=v!=="mine"; if(v==="demo"){vMine=null;renderVal()} else if(!vMine) document.getElementById("mineMsg").textContent="匯入資料前，上方仍顯示示範資料。"});
+document.querySelectorAll("#vRowF .chip").forEach(b=>b.onclick=()=>{vRowFilt=b.dataset.f;document.querySelectorAll("#vRowF .chip").forEach(x=>x.setAttribute("aria-pressed",x===b));renderVal()});
+document.getElementById("vThr").oninput=renderVal;
+document.getElementById("mineRun").onclick=()=>{
+  const msg=document.getElementById("mineMsg"), p=document.getElementById("pText").value, n=document.getElementById("nText").value;
+  if(!p.trim()||!n.trim()){msg.innerHTML=`<span class="err">請同時提供收盤價與新聞兩份資料。</span>`;return}
+  const {ds,errs}=buildMine(p,n);
+  if(!ds.days.length||!ds.news.length){msg.innerHTML=`<span class="err">讀不到有效資料，請確認欄位順序與上方範例相同。</span>`;return}
+  vMine=ds; msg.innerHTML=`已載入 ${ds.news.length} 則新聞、${ds.days.length} 個交易日。`+(errs.length?`<span class="err"> 略過 ${errs.length} 列：${esc(errs.slice(0,3).join("、"))}${errs.length>3?"…":""}</span>`:"");
+  renderVal(); window.scrollTo({top:0,behavior:"smooth"});
+};
+VDATA=buildDemo();
+// ---------- 自行分析：貼連結自動讀取 ----------
+const HOST_BROWSER="host:claude_browser";
+const HOSTMAP=[[/(^|\.)money\.udn\.com$/,"udn"],[/(^|\.)yahoo\.com$/,"yahoo"],[/(^|\.)news\.google\./,"google"],[/(^|\.)businessweekly\.com\.tw$/,"bw"],[/(^|\.)cw\.com\.tw$/,"cw"]];
+const srcOfUrl=u=>{try{const h=new URL(u).hostname;const m=HOSTMAP.find(([re])=>re.test(h));return m?m[1]:null}catch(e){return null}};
+let mcpP=null; const getMcp=()=>mcpP||(mcpP=(async()=>{try{return window.claude&&window.claude.use?await window.claude.use("mcp"):null}catch(e){return null}})());
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let tryMeta={url:"https://money.udn.com/money/story/5607/9834906",src:"udn"};
+function setStat(msg,kind=""){const el=document.getElementById("tStat");el.className="fetchstat "+kind;el.innerHTML=msg}
+function showSrc(url){
+  const s=srcOfUrl(url), el=document.getElementById("tSrc");
+  if(!url){el.innerHTML="";return}
+  el.innerHTML=(s?`來源：<b>${SOURCES[s]}</b>`:`來源：<b>其他網站</b>（不在五個指定來源內，仍可分析）`)+` · <a class="origlink" href="${esc(url)}" target="_blank" rel="noopener noreferrer">開啟原文 ↗</a>`;
+}
+function resultText(r){
+  if(!r) return "";
+  if(typeof r.payload==="string") return r.payload;
+  const t=(r.content||[]).filter(c=>c.type==="text").map(c=>c.text).join("\n");
+  if(t) return t;
+  try{return JSON.stringify(r.payload??r.structuredContent??"")}catch(e){return ""}
+}
+function findTabId(r){
+  const p=r&&(r.structuredContent||r.payload);
+  if(p&&typeof p==="object"&&p.tabId!=null) return +p.tabId;
+  const m=resultText(r).match(/tab\s*_?id["']?\s*[:=#]?\s*["']?(\d+)/i);
+  return m?+m[1]:null;
+}
+function extractArticle(text){
+  const cjk=s=>(s.match(/[一-鿿]/g)||[]).length;
+  const lines=text.split(/\r?\n+/).map(s=>s.replace(/\s+/g," ").trim()).filter(Boolean);
+  const clean=t=>{const parts=t.split(/\s*[|｜]\s*|\s+-\s+/);return parts[0].length>=8?parts[0]:t};
+  let title=lines.slice(0,40).find(l=>l.length>=10&&l.length<=100&&cjk(l)>=6&&!/^(首頁|登入|訂閱|分享|廣告)/.test(l))||"";
+  title=clean(title);
+  const seen=new Set(); const paras=[];
+  for(const l of lines){ if(cjk(l)<25||(title&&l.startsWith(title))||seen.has(l)) continue; seen.add(l); paras.push(l) }
+  return {title,body:paras.join("\n").slice(0,3000)};
+}
+const ERRMSG={
+  server_not_connected:"這個功能要在 <b>Claude 桌面版 App</b> 開啟本頁才能使用（需要用到 App 的內建瀏覽器）。目前可以點「開啟原文」，把標題和內文貼到下方再分析。",
+  not_in_manifest:"你沒有允許這個頁面使用內建瀏覽器。可以從頁面的權限選單重新允許，或把內文貼到下方。",
+  approval_required:"讀取網頁需要你的允許。請再按一次「讀取並分析」並選擇允許，或把內文貼到下方。",
+  cancelled:"已取消開啟網頁。",
+  server_unavailable:"內建瀏覽器暫時沒有回應，請稍後再按一次。",
+  tool_error:"瀏覽器打不開這個網頁"
+};
+async function fetchAndAnalyze(){
+  const btn=document.getElementById("tFetch"), url=document.getElementById("tUrl").value.trim();
+  if(!/^https?:\/\/\S+$/.test(url)){setStat("請貼上以 http:// 或 https:// 開頭的完整網址。","bad");return}
+  showSrc(url); btn.disabled=true; setStat("連線內建瀏覽器…");
+  try{
+    const mcp=await getMcp();
+    if(!mcp){ setStat(ERRMSG.server_not_connected,"bad"); return }
+    setStat("在內建瀏覽器開啟網頁…（第一次使用會詢問你是否允許）");
+    const r1=await mcp.callTool(HOST_BROWSER,"preview_start",{url},{cache:false});
+    const tabId=findTabId(r1);
+    await sleep(1200);
+    setStat("擷取標題與內文…");
+    let text="";
+    for(let i=0;i<2&&text.length<80;i++){ if(i) await sleep(2000); const r2=await mcp.callTool(HOST_BROWSER,"get_page_text",tabId!=null?{tabId}:{},{cache:false}); text=resultText(r2) }
+    const art=extractArticle(text);
+    if(!art.title&&!art.body){ setStat("網頁讀到的文字太少，可能是付費文章、需要登入，或網站阻擋。請點「開啟原文」，把內容貼到下方。","bad"); return }
+    document.getElementById("tTitle").value=art.title; document.getElementById("tBody").value=art.body||"（未擷取到內文，僅以標題分析）";
+    tryMeta={url,src:srcOfUrl(url)};
+    setStat(`已讀取：標題 ${art.title.length} 字、內文 ${art.body.length} 字。下方可修改後重新分析。`,"ok");
+    runTry();
+  }catch(e){
+    const code=e&&e.code;
+    let msg=ERRMSG[code]||(code==="not_granted"||code==="capability_disabled"||code==="capability_removed"?ERRMSG.server_not_connected:`讀取失敗（${esc(code||"未知錯誤")}），請稍後再試，或把內文貼到下方。`);
+    if(code==="tool_error") msg+=`：${esc((e.message||"").slice(0,120))}。請點「開啟原文」確認網址，或把內文貼到下方。`;
+    setStat(msg,"bad");
+  }finally{ btn.disabled=false }
+}
+function addToFeed(){
+  const t=document.getElementById("tTitle").value.trim(), b=document.getElementById("tBody").value.trim();
+  if(!t||!tryMeta.url) return;
+  if(items.some(it=>it.url===tryMeta.url)){document.getElementById("addMsg").textContent="這則新聞已經在列表裡。";return}
+  const now=new Date();
+  items=[{src:tryMeta.src||"其他網站",d:ymd(now),time:String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0"),t,b,url:tryMeta.url,id:Date.now(),fresh:true,a:analyze(t,b)},...items];
+  renderAll(); document.getElementById("addMsg").textContent="已加入「最新新聞」列表（重新整理頁面後不會保留）。";
+}
+document.getElementById("tFetch").onclick=fetchAndAnalyze;
+document.getElementById("tUrl").addEventListener("keydown",e=>{if(e.key==="Enter")fetchAndAnalyze()});
+document.getElementById("tUrl").addEventListener("input",e=>showSrc(e.target.value.trim()));
+showSrc(tryMeta.url);
+analyzeAll(); renderAll(); renderLex(); runTry(); renderVal();
+</script>

@@ -1,0 +1,26 @@
+User-agent: *
+# United Daily News Group content is made available under our terms and conditions of use.  
+# Any other uses are not permitted, incl. but not limited to: for large language  
+# models (LLMs), machine learning and/or artificial intelligence-related  
+# purposes; with any of the aforementioned technologies; and/or for any  
+# commercial purposes. Contact copyright@udn.com for assistance
+# META
+User-agent: Meta-ExternalAgent
+Allow: /
+User-agent: Meta-ExternalFetcher
+Allow: /
+User-agent: facebookexternalhit
+Allow: /
+Disallow: /srank/*
+Disallow: /money/preview/*
+Disallow: /plugins/feedback.php*
+Disallow: /mfunc/*
+Sitemap: https://money.udn.com/sitemap/staticmap/index
+Sitemap: https://money.udn.com/sitemap/gnews/1001
+# chat bot
+User-agent: GPTBot
+Disallow: /
+User-agent: Claude
+Disallow: /
+User-agent: ClaudeBot
+Disallow: /

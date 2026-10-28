@@ -1,0 +1,5045 @@
+{
+ "_說明": "由 tools/make_golden.js 從原型 news-radar.html 產生，請勿手動修改。",
+ "stocks": [
+  {
+   "code": "2330",
+   "name": "台積電",
+   "aliases": [
+    "台積"
+   ],
+   "sectors": [
+    "晶圓代工",
+    "先進封裝"
+   ]
+  },
+  {
+   "code": "2303",
+   "name": "聯電",
+   "aliases": [],
+   "sectors": [
+    "晶圓代工"
+   ]
+  },
+  {
+   "code": "5347",
+   "name": "世界",
+   "aliases": [
+    "世界先進"
+   ],
+   "sectors": [
+    "晶圓代工"
+   ]
+  },
+  {
+   "code": "6770",
+   "name": "力積電",
+   "aliases": [],
+   "sectors": [
+    "晶圓代工",
+    "記憶體"
+   ]
+  },
+  {
+   "code": "2454",
+   "name": "聯發科",
+   "aliases": [],
+   "sectors": [
+    "IC設計",
+    "手機"
+   ]
+  },
+  {
+   "code": "3034",
+   "name": "聯詠",
+   "aliases": [],
+   "sectors": [
+    "IC設計",
+    "面板"
+   ]
+  },
+  {
+   "code": "2379",
+   "name": "瑞昱",
+   "aliases": [],
+   "sectors": [
+    "IC設計"
+   ]
+  },
+  {
+   "code": "3711",
+   "name": "日月光投控",
+   "aliases": [
+    "日月光"
+   ],
+   "sectors": [
+    "封測",
+    "先進封裝"
+   ]
+  },
+  {
+   "code": "6239",
+   "name": "力成",
+   "aliases": [],
+   "sectors": [
+    "封測",
+    "記憶體"
+   ]
+  },
+  {
+   "code": "2408",
+   "name": "南亞科",
+   "aliases": [],
+   "sectors": [
+    "記憶體"
+   ]
+  },
+  {
+   "code": "2344",
+   "name": "華邦電",
+   "aliases": [],
+   "sectors": [
+    "記憶體"
+   ]
+  },
+  {
+   "code": "2337",
+   "name": "旺宏",
+   "aliases": [],
+   "sectors": [
+    "記憶體"
+   ]
+  },
+  {
+   "code": "3006",
+   "name": "晶豪科",
+   "aliases": [],
+   "sectors": [
+    "記憶體"
+   ]
+  },
+  {
+   "code": "2317",
+   "name": "鴻海",
+   "aliases": [],
+   "sectors": [
+    "AI伺服器",
+    "電動車"
+   ]
+  },
+  {
+   "code": "2382",
+   "name": "廣達",
+   "aliases": [],
+   "sectors": [
+    "AI伺服器"
+   ]
+  },
+  {
+   "code": "3231",
+   "name": "緯創",
+   "aliases": [],
+   "sectors": [
+    "AI伺服器"
+   ]
+  },
+  {
+   "code": "6669",
+   "name": "緯穎",
+   "aliases": [],
+   "sectors": [
+    "AI伺服器"
+   ]
+  },
+  {
+   "code": "2356",
+   "name": "英業達",
+   "aliases": [],
+   "sectors": [
+    "AI伺服器"
+   ]
+  },
+  {
+   "code": "3706",
+   "name": "神達",
+   "aliases": [],
+   "sectors": [
+    "AI伺服器"
+   ]
+  },
+  {
+   "code": "2376",
+   "name": "技嘉",
+   "aliases": [],
+   "sectors": [
+    "AI伺服器"
+   ]
+  },
+  {
+   "code": "2308",
+   "name": "台達電",
+   "aliases": [],
+   "sectors": [
+    "電源",
+    "電動車"
+   ]
+  },
+  {
+   "code": "2345",
+   "name": "智邦",
+   "aliases": [],
+   "sectors": [
+    "網通"
+   ]
+  },
+  {
+   "code": "3008",
+   "name": "大立光",
+   "aliases": [],
+   "sectors": [
+    "光學",
+    "手機"
+   ]
+  },
+  {
+   "code": "2409",
+   "name": "友達",
+   "aliases": [],
+   "sectors": [
+    "面板"
+   ]
+  },
+  {
+   "code": "3481",
+   "name": "群創",
+   "aliases": [],
+   "sectors": [
+    "面板"
+   ]
+  },
+  {
+   "code": "1303",
+   "name": "南亞",
+   "aliases": [],
+   "sectors": [
+    "塑化",
+    "PCB材料"
+   ]
+  },
+  {
+   "code": "1301",
+   "name": "台塑",
+   "aliases": [],
+   "sectors": [
+    "塑化"
+   ]
+  },
+  {
+   "code": "6505",
+   "name": "台塑化",
+   "aliases": [],
+   "sectors": [
+    "塑化"
+   ]
+  },
+  {
+   "code": "4958",
+   "name": "臻鼎-KY",
+   "aliases": [
+    "臻鼎"
+   ],
+   "sectors": [
+    "PCB"
+   ]
+  },
+  {
+   "code": "2383",
+   "name": "台光電",
+   "aliases": [],
+   "sectors": [
+    "PCB材料"
+   ]
+  },
+  {
+   "code": "3037",
+   "name": "欣興",
+   "aliases": [],
+   "sectors": [
+    "PCB"
+   ]
+  },
+  {
+   "code": "3105",
+   "name": "穩懋",
+   "aliases": [],
+   "sectors": [
+    "CPO",
+    "低軌衛星"
+   ]
+  },
+  {
+   "code": "4979",
+   "name": "華星光",
+   "aliases": [],
+   "sectors": [
+    "CPO"
+   ]
+  },
+  {
+   "code": "3363",
+   "name": "上詮",
+   "aliases": [],
+   "sectors": [
+    "CPO"
+   ]
+  },
+  {
+   "code": "2603",
+   "name": "長榮",
+   "aliases": [],
+   "sectors": [
+    "航運"
+   ]
+  },
+  {
+   "code": "2609",
+   "name": "陽明",
+   "aliases": [],
+   "sectors": [
+    "航運"
+   ]
+  },
+  {
+   "code": "2615",
+   "name": "萬海",
+   "aliases": [],
+   "sectors": [
+    "航運"
+   ]
+  },
+  {
+   "code": "2618",
+   "name": "長榮航",
+   "aliases": [],
+   "sectors": [
+    "航空"
+   ]
+  },
+  {
+   "code": "2610",
+   "name": "華航",
+   "aliases": [
+    "中華航空"
+   ],
+   "sectors": [
+    "航空"
+   ]
+  },
+  {
+   "code": "2002",
+   "name": "中鋼",
+   "aliases": [],
+   "sectors": [
+    "鋼鐵"
+   ]
+  },
+  {
+   "code": "1605",
+   "name": "華新",
+   "aliases": [],
+   "sectors": [
+    "電線電纜"
+   ]
+  },
+  {
+   "code": "2881",
+   "name": "富邦金",
+   "aliases": [],
+   "sectors": [
+    "金融"
+   ]
+  },
+  {
+   "code": "2882",
+   "name": "國泰金",
+   "aliases": [],
+   "sectors": [
+    "金融"
+   ]
+  },
+  {
+   "code": "2891",
+   "name": "中信金",
+   "aliases": [],
+   "sectors": [
+    "金融"
+   ]
+  },
+  {
+   "code": "2886",
+   "name": "兆豐金",
+   "aliases": [],
+   "sectors": [
+    "金融"
+   ]
+  },
+  {
+   "code": "2412",
+   "name": "中華電",
+   "aliases": [],
+   "sectors": [
+    "電信"
+   ]
+  },
+  {
+   "code": "2207",
+   "name": "和泰車",
+   "aliases": [],
+   "sectors": [
+    "汽車"
+   ]
+  },
+  {
+   "code": "1802",
+   "name": "台玻",
+   "aliases": [],
+   "sectors": [
+    "玻纖"
+   ]
+  },
+  {
+   "code": "2327",
+   "name": "國巨",
+   "aliases": [],
+   "sectors": [
+    "被動元件"
+   ]
+  },
+  {
+   "code": "2492",
+   "name": "華新科",
+   "aliases": [],
+   "sectors": [
+    "被動元件"
+   ]
+  },
+  {
+   "code": "6488",
+   "name": "環球晶",
+   "aliases": [],
+   "sectors": [
+    "矽晶圓"
+   ]
+  },
+  {
+   "code": "3532",
+   "name": "台勝科",
+   "aliases": [],
+   "sectors": [
+    "矽晶圓"
+   ]
+  },
+  {
+   "code": "3374",
+   "name": "精材",
+   "aliases": [],
+   "sectors": [
+    "封測"
+   ]
+  },
+  {
+   "code": "6757",
+   "name": "台灣虎航",
+   "aliases": [
+    "虎航"
+   ],
+   "sectors": [
+    "航空"
+   ]
+  },
+  {
+   "code": "8021",
+   "name": "尖點",
+   "aliases": [],
+   "sectors": [
+    "PCB"
+   ]
+  },
+  {
+   "code": "4938",
+   "name": "和碩",
+   "aliases": [],
+   "sectors": [
+    "手機",
+    "AI伺服器"
+   ]
+  },
+  {
+   "code": "3443",
+   "name": "創意",
+   "aliases": [],
+   "sectors": [
+    "IC設計"
+   ]
+  },
+  {
+   "code": "6147",
+   "name": "頎邦",
+   "aliases": [],
+   "sectors": [
+    "封測"
+   ]
+  },
+  {
+   "code": "6213",
+   "name": "聯茂",
+   "aliases": [],
+   "sectors": [
+    "PCB材料"
+   ]
+  }
+ ],
+ "sentiment": [
+  [
+   "創新高",
+   2.5
+  ],
+  [
+   "創高",
+   2
+  ],
+  [
+   "營收成長",
+   2
+  ],
+  [
+   "年增",
+   1
+  ],
+  [
+   "季增",
+   1
+  ],
+  [
+   "漲價",
+   2
+  ],
+  [
+   "調漲",
+   1.5
+  ],
+  [
+   "報價上漲",
+   2
+  ],
+  [
+   "合約價上漲",
+   2
+  ],
+  [
+   "買超",
+   1
+  ],
+  [
+   "接單",
+   1
+  ],
+  [
+   "訂單滿載",
+   2.5
+  ],
+  [
+   "取得訂單",
+   2
+  ],
+  [
+   "樂觀",
+   1.5
+  ],
+  [
+   "上修",
+   2
+  ],
+  [
+   "擴產",
+   1.5
+  ],
+  [
+   "優於預期",
+   2
+  ],
+  [
+   "漲停",
+   1.5
+  ],
+  [
+   "轉盈",
+   2.5
+  ],
+  [
+   "配息",
+   1
+  ],
+  [
+   "得標",
+   1.5
+  ],
+  [
+   "出貨放量",
+   2
+  ],
+  [
+   "需求強勁",
+   2
+  ],
+  [
+   "供不應求",
+   2.5
+  ],
+  [
+   "受惠",
+   1.5
+  ],
+  [
+   "跟進",
+   0.5
+  ],
+  [
+   "獲利成長",
+   2
+  ],
+  [
+   "看好",
+   1
+  ],
+  [
+   "訂單",
+   1
+  ],
+  [
+   "量產",
+   1
+  ],
+  [
+   "重要進展",
+   1.5
+  ],
+  [
+   "砍單",
+   -2.5
+  ],
+  [
+   "衰退",
+   -2
+  ],
+  [
+   "年減",
+   -1
+  ],
+  [
+   "季減",
+   -1
+  ],
+  [
+   "下修",
+   -2
+  ],
+  [
+   "虧損",
+   -2.5
+  ],
+  [
+   "跌停",
+   -1.5
+  ],
+  [
+   "賣超",
+   -1
+  ],
+  [
+   "庫存調整",
+   -1.5
+  ],
+  [
+   "保守",
+   -1.5
+  ],
+  [
+   "低於預期",
+   -2
+  ],
+  [
+   "罰款",
+   -1.5
+  ],
+  [
+   "停工",
+   -2
+  ],
+  [
+   "火災",
+   -2
+  ],
+  [
+   "關稅",
+   -1.5
+  ],
+  [
+   "制裁",
+   -2
+  ],
+  [
+   "跌價",
+   -1.5
+  ],
+  [
+   "報價下跌",
+   -2
+  ],
+  [
+   "下跌",
+   -1
+  ],
+  [
+   "裁員",
+   -1.5
+  ],
+  [
+   "延後",
+   -1
+  ],
+  [
+   "審慎",
+   -0.5
+  ],
+  [
+   "觀望",
+   -0.5
+  ],
+  [
+   "疲弱",
+   -1.5
+  ],
+  [
+   "壓力",
+   -1
+  ],
+  [
+   "油價上漲",
+   -1.5
+  ],
+  [
+   "成本上升",
+   -1
+  ],
+  [
+   "回檔",
+   -1
+  ],
+  [
+   "利空",
+   -1.5
+  ],
+  [
+   "利多",
+   1.5
+  ],
+  [
+   "跌破",
+   -1.5
+  ],
+  [
+   "調高",
+   1.5
+  ],
+  [
+   "目標價調高",
+   2
+  ],
+  [
+   "買進",
+   1.5
+  ],
+  [
+   "加碼",
+   1.5
+  ],
+  [
+   "逢低布局",
+   1
+  ],
+  [
+   "抗跌",
+   0.5
+  ],
+  [
+   "收黑",
+   -1
+  ],
+  [
+   "大跌",
+   -1.5
+  ],
+  [
+   "崩跌",
+   -2.5
+  ],
+  [
+   "重挫",
+   -2
+  ],
+  [
+   "承壓",
+   -1
+  ],
+  [
+   "賣壓",
+   -1
+  ],
+  [
+   "出逃",
+   -1.5
+  ],
+  [
+   "恐慌",
+   -1
+  ],
+  [
+   "吃緊",
+   1
+  ],
+  [
+   "產能過剩",
+   -2
+  ],
+  [
+   "暴增",
+   2
+  ],
+  [
+   "跳水",
+   -2
+  ],
+  [
+   "續創新高",
+   2.5
+  ],
+  [
+   "油價下跌",
+   1.5
+  ],
+  [
+   "油價降",
+   1.5
+  ],
+  [
+   "優於大盤",
+   1.5
+  ],
+  [
+   "競爭加劇",
+   -1.5
+  ],
+  [
+   "緩解",
+   1.5
+  ],
+  [
+   "逆勢",
+   1
+  ],
+  [
+   "補跌",
+   -1.5
+  ],
+  [
+   "擴大",
+   0
+  ]
+ ],
+ "sectors": [
+  [
+   "晶圓代工",
+   "晶圓代工"
+  ],
+  [
+   "先進製程",
+   "晶圓代工"
+  ],
+  [
+   "CoWoS",
+   "先進封裝"
+  ],
+  [
+   "先進封裝",
+   "先進封裝"
+  ],
+  [
+   "封測",
+   "封測"
+  ],
+  [
+   "記憶體",
+   "記憶體"
+  ],
+  [
+   "DRAM",
+   "記憶體"
+  ],
+  [
+   "NAND",
+   "記憶體"
+  ],
+  [
+   "NOR Flash",
+   "記憶體"
+  ],
+  [
+   "HBM",
+   "記憶體"
+  ],
+  [
+   "AI伺服器",
+   "AI伺服器"
+  ],
+  [
+   "伺服器",
+   "AI伺服器"
+  ],
+  [
+   "GB300",
+   "AI伺服器"
+  ],
+  [
+   "CPO",
+   "CPO"
+  ],
+  [
+   "矽光子",
+   "CPO"
+  ],
+  [
+   "光通訊",
+   "CPO"
+  ],
+  [
+   "面板",
+   "面板"
+  ],
+  [
+   "貨櫃",
+   "航運"
+  ],
+  [
+   "運價",
+   "航運"
+  ],
+  [
+   "SCFI",
+   "航運"
+  ],
+  [
+   "航空",
+   "航空"
+  ],
+  [
+   "鋼價",
+   "鋼鐵"
+  ],
+  [
+   "鋼鐵",
+   "鋼鐵"
+  ],
+  [
+   "CCL",
+   "PCB材料"
+  ],
+  [
+   "銅箔基板",
+   "PCB材料"
+  ],
+  [
+   "PCB",
+   "PCB"
+  ],
+  [
+   "載板",
+   "PCB"
+  ],
+  [
+   "壽險",
+   "金融"
+  ],
+  [
+   "金控",
+   "金融"
+  ],
+  [
+   "手機",
+   "手機"
+  ],
+  [
+   "電動車",
+   "電動車"
+  ],
+  [
+   "低軌衛星",
+   "低軌衛星"
+  ],
+  [
+   "石化",
+   "塑化"
+  ],
+  [
+   "塑化",
+   "塑化"
+  ],
+  [
+   "交換器",
+   "網通"
+  ],
+  [
+   "MLCC",
+   "被動元件"
+  ],
+  [
+   "被動元件",
+   "被動元件"
+  ],
+  [
+   "ABF",
+   "PCB"
+  ],
+  [
+   "鑽針",
+   "PCB"
+  ],
+  [
+   "半導體",
+   "晶圓代工"
+  ],
+  [
+   "矽晶圓",
+   "矽晶圓"
+  ]
+ ],
+ "cases": [
+  {
+   "id": "https://tw.news.yahoo.com/%E5%8F%B0%E8%82%A1%E9%80%B1%E5%A0%B1-%E5%A4%96%E8%B3%87%E5%86%8D%E7%A0%8D2300%E5%84%84-%E5%8D%8A%E5%B0%8E%E9%AB%94%E6%97%8F%E7%BE%A4%E6%89%BF%E5%A3%93-173735309.html",
+   "title": "台股週報》外資再砍2300億　半導體族群承壓",
+   "body": "加權指數上週在颱風假縮短的四個交易日內下跌約 1,070 點，外資賣超逾 2,300 億元。外資賣超最多的是力積電、台積電與聯電，半導體族群承壓。",
+   "custom": {},
+   "result": {
+    "total": -5.5,
+    "label": "neg",
+    "hits": [
+     {
+      "term": "承壓",
+      "w": -1.5,
+      "note": ""
+     },
+     {
+      "term": "下跌",
+      "w": -1,
+      "note": ""
+     },
+     {
+      "term": "賣超",
+      "w": -1,
+      "note": ""
+     },
+     {
+      "term": "賣超",
+      "w": -1,
+      "note": ""
+     },
+     {
+      "term": "承壓",
+      "w": -1,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 15,
+      "end": 18,
+      "term": "半導體",
+      "kind": "sector"
+     },
+     {
+      "start": 20,
+      "end": 22,
+      "term": "承壓",
+      "kind": "neg"
+     },
+     {
+      "start": 42,
+      "end": 44,
+      "term": "下跌",
+      "kind": "neg"
+     },
+     {
+      "start": 56,
+      "end": 58,
+      "term": "賣超",
+      "kind": "neg"
+     },
+     {
+      "start": 71,
+      "end": 73,
+      "term": "賣超",
+      "kind": "neg"
+     },
+     {
+      "start": 77,
+      "end": 80,
+      "term": "力積電",
+      "kind": "stock"
+     },
+     {
+      "start": 81,
+      "end": 84,
+      "term": "台積電",
+      "kind": "stock"
+     },
+     {
+      "start": 85,
+      "end": 87,
+      "term": "聯電",
+      "kind": "stock"
+     },
+     {
+      "start": 88,
+      "end": 91,
+      "term": "半導體",
+      "kind": "sector"
+     },
+     {
+      "start": 93,
+      "end": 95,
+      "term": "承壓",
+      "kind": "neg"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      23
+     ],
+     [
+      23,
+      69
+     ],
+     [
+      69,
+      96
+     ]
+    ],
+    "sentence_scores": [
+     -1.5,
+     -2,
+     -2
+    ],
+    "impacts": [
+     {
+      "code": "6770",
+      "type": "direct",
+      "sector": null,
+      "score": -2,
+      "key_sentence": 2,
+      "reason": "新聞直接提及，偏空。關鍵句：「外資賣超最多的是力積電、台積電與聯電，半導體族群承壓。」"
+     },
+     {
+      "code": "2330",
+      "type": "direct",
+      "sector": null,
+      "score": -2,
+      "key_sentence": 2,
+      "reason": "新聞直接提及，偏空。關鍵句：「外資賣超最多的是力積電、台積電與聯電，半導體族群承壓。」"
+     },
+     {
+      "code": "2303",
+      "type": "direct",
+      "sector": null,
+      "score": -2,
+      "key_sentence": 2,
+      "reason": "新聞直接提及，偏空。關鍵句：「外資賣超最多的是力積電、台積電與聯電，半導體族群承壓。」"
+     },
+     {
+      "code": "5347",
+      "type": "sector",
+      "sector": "晶圓代工",
+      "score": -1.75,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「晶圓代工」族群，產業連動偏空（取一半分數）"
+     }
+    ]
+   }
+  },
+  {
+   "id": "https://tw.news.yahoo.com/%E9%80%A3%E5%81%87%E5%BE%8C%E5%8F%B0%E8%82%A1%E8%A3%9C%E8%B7%8C%E5%8D%83%E9%BB%9E-%E5%93%B2%E5%93%B2%E9%BB%9E%E5%90%8D6%E6%AA%94-%E5%8F%AF%E9%80%A2%E4%BD%8E%E5%B8%83%E5%B1%80-191500404.html",
+   "title": "連假後台股補跌千點？哲哲點名6檔「可逢低布局」",
+   "body": "外資 10 月 22 日創單日賣超紀錄，連假期間美股半導體走弱，市場擔心台股開盤補跌。分析師認為恐慌賣壓可望緩解，點名國巨、華新科、環球晶、台勝科、精材、鴻海可逢低布局。",
+   "custom": {},
+   "result": {
+    "total": -2.75,
+    "label": "neg",
+    "hits": [
+     {
+      "term": "補跌",
+      "w": -2.25,
+      "note": ""
+     },
+     {
+      "term": "逢低布局",
+      "w": 1.5,
+      "note": ""
+     },
+     {
+      "term": "賣超",
+      "w": -1,
+      "note": ""
+     },
+     {
+      "term": "補跌",
+      "w": -1.5,
+      "note": ""
+     },
+     {
+      "term": "恐慌",
+      "w": -1,
+      "note": ""
+     },
+     {
+      "term": "賣壓",
+      "w": -1,
+      "note": ""
+     },
+     {
+      "term": "緩解",
+      "w": 1.5,
+      "note": ""
+     },
+     {
+      "term": "逢低布局",
+      "w": 1,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 5,
+      "end": 7,
+      "term": "補跌",
+      "kind": "neg"
+     },
+     {
+      "start": 18,
+      "end": 22,
+      "term": "逢低布局",
+      "kind": "pos"
+     },
+     {
+      "start": 39,
+      "end": 41,
+      "term": "賣超",
+      "kind": "neg"
+     },
+     {
+      "start": 50,
+      "end": 53,
+      "term": "半導體",
+      "kind": "sector"
+     },
+     {
+      "start": 64,
+      "end": 66,
+      "term": "補跌",
+      "kind": "neg"
+     },
+     {
+      "start": 72,
+      "end": 74,
+      "term": "恐慌",
+      "kind": "neg"
+     },
+     {
+      "start": 74,
+      "end": 76,
+      "term": "賣壓",
+      "kind": "neg"
+     },
+     {
+      "start": 78,
+      "end": 80,
+      "term": "緩解",
+      "kind": "pos"
+     },
+     {
+      "start": 83,
+      "end": 85,
+      "term": "國巨",
+      "kind": "stock"
+     },
+     {
+      "start": 86,
+      "end": 89,
+      "term": "華新科",
+      "kind": "stock"
+     },
+     {
+      "start": 90,
+      "end": 93,
+      "term": "環球晶",
+      "kind": "stock"
+     },
+     {
+      "start": 94,
+      "end": 97,
+      "term": "台勝科",
+      "kind": "stock"
+     },
+     {
+      "start": 98,
+      "end": 100,
+      "term": "精材",
+      "kind": "stock"
+     },
+     {
+      "start": 101,
+      "end": 103,
+      "term": "鴻海",
+      "kind": "stock"
+     },
+     {
+      "start": 104,
+      "end": 108,
+      "term": "逢低布局",
+      "kind": "pos"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      10
+     ],
+     [
+      10,
+      24
+     ],
+     [
+      24,
+      67
+     ],
+     [
+      67,
+      109
+     ]
+    ],
+    "sentence_scores": [
+     -2.25,
+     1.5,
+     -2.5,
+     0.5
+    ],
+    "impacts": [
+     {
+      "code": "2330",
+      "type": "sector",
+      "sector": "晶圓代工",
+      "score": -1.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「晶圓代工」族群，產業連動偏空（取一半分數）"
+     },
+     {
+      "code": "2303",
+      "type": "sector",
+      "sector": "晶圓代工",
+      "score": -1.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「晶圓代工」族群，產業連動偏空（取一半分數）"
+     },
+     {
+      "code": "5347",
+      "type": "sector",
+      "sector": "晶圓代工",
+      "score": -1.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「晶圓代工」族群，產業連動偏空（取一半分數）"
+     },
+     {
+      "code": "6770",
+      "type": "sector",
+      "sector": "晶圓代工",
+      "score": -1.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「晶圓代工」族群，產業連動偏空（取一半分數）"
+     },
+     {
+      "code": "2327",
+      "type": "direct",
+      "sector": null,
+      "score": 0.5,
+      "key_sentence": 3,
+      "reason": "新聞直接提及，偏多。關鍵句：「分析師認為恐慌賣壓可望緩解，點名國巨、華新科、環球晶、台勝科、精材、鴻海可逢低布局。」"
+     },
+     {
+      "code": "2492",
+      "type": "direct",
+      "sector": null,
+      "score": 0.5,
+      "key_sentence": 3,
+      "reason": "新聞直接提及，偏多。關鍵句：「分析師認為恐慌賣壓可望緩解，點名國巨、華新科、環球晶、台勝科、精材、鴻海可逢低布局。」"
+     },
+     {
+      "code": "6488",
+      "type": "direct",
+      "sector": null,
+      "score": 0.5,
+      "key_sentence": 3,
+      "reason": "新聞直接提及，偏多。關鍵句：「分析師認為恐慌賣壓可望緩解，點名國巨、華新科、環球晶、台勝科、精材、鴻海可逢低布局。」"
+     },
+     {
+      "code": "3532",
+      "type": "direct",
+      "sector": null,
+      "score": 0.5,
+      "key_sentence": 3,
+      "reason": "新聞直接提及，偏多。關鍵句：「分析師認為恐慌賣壓可望緩解，點名國巨、華新科、環球晶、台勝科、精材、鴻海可逢低布局。」"
+     },
+     {
+      "code": "3374",
+      "type": "direct",
+      "sector": null,
+      "score": 0.5,
+      "key_sentence": 3,
+      "reason": "新聞直接提及，偏多。關鍵句：「分析師認為恐慌賣壓可望緩解，點名國巨、華新科、環球晶、台勝科、精材、鴻海可逢低布局。」"
+     },
+     {
+      "code": "2317",
+      "type": "direct",
+      "sector": null,
+      "score": 0.5,
+      "key_sentence": 3,
+      "reason": "新聞直接提及，偏多。關鍵句：「分析師認為恐慌賣壓可望緩解，點名國巨、華新科、環球晶、台勝科、精材、鴻海可逢低布局。」"
+     }
+    ]
+   }
+  },
+  {
+   "id": "https://money.udn.com/money/story/5607/9836689",
+   "title": "高盛：緯穎第4季營收將年增60% 受惠四大動能 目標價調高到4,000元",
+   "body": "高盛預估緯穎第四季營收年增逾六成、季增約 8%，受惠 ASIC AI伺服器需求與新 GPU 機櫃量產等動能，將目標價調高並維持買進評等。",
+   "custom": {},
+   "result": {
+    "total": 14.75,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "年增",
+      "w": 1.5,
+      "note": ""
+     },
+     {
+      "term": "受惠",
+      "w": 2.25,
+      "note": ""
+     },
+     {
+      "term": "目標價調高",
+      "w": 3,
+      "note": ""
+     },
+     {
+      "term": "年增",
+      "w": 1,
+      "note": ""
+     },
+     {
+      "term": "季增",
+      "w": 1,
+      "note": ""
+     },
+     {
+      "term": "受惠",
+      "w": 1.5,
+      "note": ""
+     },
+     {
+      "term": "量產",
+      "w": 1,
+      "note": ""
+     },
+     {
+      "term": "目標價調高",
+      "w": 2,
+      "note": ""
+     },
+     {
+      "term": "買進",
+      "w": 1.5,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 3,
+      "end": 5,
+      "term": "緯穎",
+      "kind": "stock"
+     },
+     {
+      "start": 11,
+      "end": 13,
+      "term": "年增",
+      "kind": "pos"
+     },
+     {
+      "start": 17,
+      "end": 19,
+      "term": "受惠",
+      "kind": "pos"
+     },
+     {
+      "start": 24,
+      "end": 29,
+      "term": "目標價調高",
+      "kind": "pos"
+     },
+     {
+      "start": 41,
+      "end": 43,
+      "term": "緯穎",
+      "kind": "stock"
+     },
+     {
+      "start": 48,
+      "end": 50,
+      "term": "年增",
+      "kind": "pos"
+     },
+     {
+      "start": 54,
+      "end": 56,
+      "term": "季增",
+      "kind": "pos"
+     },
+     {
+      "start": 61,
+      "end": 63,
+      "term": "受惠",
+      "kind": "pos"
+     },
+     {
+      "start": 69,
+      "end": 74,
+      "term": "AI伺服器",
+      "kind": "sector"
+     },
+     {
+      "start": 85,
+      "end": 87,
+      "term": "量產",
+      "kind": "pos"
+     },
+     {
+      "start": 92,
+      "end": 97,
+      "term": "目標價調高",
+      "kind": "pos"
+     },
+     {
+      "start": 100,
+      "end": 102,
+      "term": "買進",
+      "kind": "pos"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      37
+     ],
+     [
+      37,
+      105
+     ]
+    ],
+    "sentence_scores": [
+     6.75,
+     8
+    ],
+    "impacts": [
+     {
+      "code": "6669",
+      "type": "direct",
+      "sector": null,
+      "score": 14.75,
+      "key_sentence": 1,
+      "reason": "新聞直接提及，偏多。關鍵句：「高盛預估緯穎第四季營收年增逾六成、季增約 8%，受惠 ASIC AI伺服器需求與新 GPU 機櫃量產等動能，將目標價調高…」"
+     },
+     {
+      "code": "2317",
+      "type": "sector",
+      "sector": "AI伺服器",
+      "score": 4,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「AI伺服器」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "2382",
+      "type": "sector",
+      "sector": "AI伺服器",
+      "score": 4,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「AI伺服器」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "3231",
+      "type": "sector",
+      "sector": "AI伺服器",
+      "score": 4,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「AI伺服器」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "2356",
+      "type": "sector",
+      "sector": "AI伺服器",
+      "score": 4,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「AI伺服器」族群，產業連動偏多（取一半分數）"
+     }
+    ]
+   }
+  },
+  {
+   "id": "https://money.udn.com/money/story/5607/9833572",
+   "title": "AI投資漏看這一環？高層數PCB讓鑽針耗用倍增 它營收連7月創高、明年EPS上看30元",
+   "body": "AI伺服器使用的高層數 PCB 大幅增加鑽針耗用，鑽針廠尖點 9 月營收年增 98%、連續七個月創新高，分析師看好明年獲利成長。",
+   "custom": {},
+   "result": {
+    "total": 9.5,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "創高",
+      "w": 3,
+      "note": ""
+     },
+     {
+      "term": "年增",
+      "w": 1,
+      "note": ""
+     },
+     {
+      "term": "創新高",
+      "w": 2.5,
+      "note": ""
+     },
+     {
+      "term": "看好",
+      "w": 1,
+      "note": ""
+     },
+     {
+      "term": "獲利成長",
+      "w": 2,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 13,
+      "end": 16,
+      "term": "PCB",
+      "kind": "sector"
+     },
+     {
+      "start": 17,
+      "end": 19,
+      "term": "鑽針",
+      "kind": "sector"
+     },
+     {
+      "start": 30,
+      "end": 32,
+      "term": "創高",
+      "kind": "pos"
+     },
+     {
+      "start": 44,
+      "end": 49,
+      "term": "AI伺服器",
+      "kind": "sector"
+     },
+     {
+      "start": 56,
+      "end": 59,
+      "term": "PCB",
+      "kind": "sector"
+     },
+     {
+      "start": 64,
+      "end": 66,
+      "term": "鑽針",
+      "kind": "sector"
+     },
+     {
+      "start": 69,
+      "end": 71,
+      "term": "鑽針",
+      "kind": "sector"
+     },
+     {
+      "start": 72,
+      "end": 74,
+      "term": "尖點",
+      "kind": "stock"
+     },
+     {
+      "start": 80,
+      "end": 82,
+      "term": "年增",
+      "kind": "pos"
+     },
+     {
+      "start": 92,
+      "end": 95,
+      "term": "創新高",
+      "kind": "pos"
+     },
+     {
+      "start": 99,
+      "end": 101,
+      "term": "看好",
+      "kind": "pos"
+     },
+     {
+      "start": 103,
+      "end": 107,
+      "term": "獲利成長",
+      "kind": "pos"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      10
+     ],
+     [
+      10,
+      44
+     ],
+     [
+      44,
+      108
+     ]
+    ],
+    "sentence_scores": [
+     0,
+     3,
+     6.5
+    ],
+    "impacts": [
+     {
+      "code": "8021",
+      "type": "direct",
+      "sector": null,
+      "score": 6.5,
+      "key_sentence": 2,
+      "reason": "新聞直接提及，偏多。關鍵句：「AI伺服器使用的高層數 PCB 大幅增加鑽針耗用，鑽針廠尖點 9 月營收年增 98%、連續七個月創新高，分析師看好明年獲…」"
+     },
+     {
+      "code": "4958",
+      "type": "sector",
+      "sector": "PCB",
+      "score": 4.75,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「PCB」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "3037",
+      "type": "sector",
+      "sector": "PCB",
+      "score": 4.75,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「PCB」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "2317",
+      "type": "sector",
+      "sector": "AI伺服器",
+      "score": 3.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「AI伺服器」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "2382",
+      "type": "sector",
+      "sector": "AI伺服器",
+      "score": 3.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「AI伺服器」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "3231",
+      "type": "sector",
+      "sector": "AI伺服器",
+      "score": 3.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「AI伺服器」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "6669",
+      "type": "sector",
+      "sector": "AI伺服器",
+      "score": 3.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「AI伺服器」族群，產業連動偏多（取一半分數）"
+     }
+    ]
+   }
+  },
+  {
+   "id": "https://money.udn.com/money/story/5607/9834906",
+   "title": "航空股布局時機到了？2027年油價降 法人看好這兩檔",
+   "body": "法人指出第四季油價上漲，航空公司獲利面臨壓力。但預估 2027 年油價下跌約兩成，獲利可望回升，給予華航、台灣虎航買進評等，長榮航維持中立。",
+   "custom": {},
+   "result": {
+    "total": 4.25,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "油價降",
+      "w": 2.25,
+      "note": ""
+     },
+     {
+      "term": "看好",
+      "w": 1.5,
+      "note": ""
+     },
+     {
+      "term": "油價上漲",
+      "w": -1.5,
+      "note": ""
+     },
+     {
+      "term": "壓力",
+      "w": -1,
+      "note": ""
+     },
+     {
+      "term": "油價下跌",
+      "w": 1.5,
+      "note": ""
+     },
+     {
+      "term": "買進",
+      "w": 1.5,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 0,
+      "end": 2,
+      "term": "航空",
+      "kind": "sector"
+     },
+     {
+      "start": 15,
+      "end": 18,
+      "term": "油價降",
+      "kind": "pos"
+     },
+     {
+      "start": 21,
+      "end": 23,
+      "term": "看好",
+      "kind": "pos"
+     },
+     {
+      "start": 34,
+      "end": 38,
+      "term": "油價上漲",
+      "kind": "neg"
+     },
+     {
+      "start": 39,
+      "end": 41,
+      "term": "航空",
+      "kind": "sector"
+     },
+     {
+      "start": 47,
+      "end": 49,
+      "term": "壓力",
+      "kind": "neg"
+     },
+     {
+      "start": 60,
+      "end": 64,
+      "term": "油價下跌",
+      "kind": "pos"
+     },
+     {
+      "start": 77,
+      "end": 79,
+      "term": "華航",
+      "kind": "stock"
+     },
+     {
+      "start": 80,
+      "end": 84,
+      "term": "台灣虎航",
+      "kind": "stock"
+     },
+     {
+      "start": 84,
+      "end": 86,
+      "term": "買進",
+      "kind": "pos"
+     },
+     {
+      "start": 89,
+      "end": 92,
+      "term": "長榮航",
+      "kind": "stock"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      10
+     ],
+     [
+      10,
+      27
+     ],
+     [
+      27,
+      50
+     ],
+     [
+      50,
+      97
+     ]
+    ],
+    "sentence_scores": [
+     0,
+     3.75,
+     -2.5,
+     3
+    ],
+    "impacts": [
+     {
+      "code": "2610",
+      "type": "direct",
+      "sector": null,
+      "score": 3,
+      "key_sentence": 3,
+      "reason": "新聞直接提及，偏多。關鍵句：「但預估 2027 年油價下跌約兩成，獲利可望回升，給予華航、台灣虎航買進評等，長榮航維持中立。」"
+     },
+     {
+      "code": "6757",
+      "type": "direct",
+      "sector": null,
+      "score": 3,
+      "key_sentence": 3,
+      "reason": "新聞直接提及，偏多。關鍵句：「但預估 2027 年油價下跌約兩成，獲利可望回升，給予華航、台灣虎航買進評等，長榮航維持中立。」"
+     },
+     {
+      "code": "2618",
+      "type": "direct",
+      "sector": null,
+      "score": 3,
+      "key_sentence": 3,
+      "reason": "新聞直接提及，偏多。關鍵句：「但預估 2027 年油價下跌約兩成，獲利可望回升，給予華航、台灣虎航買進評等，長榮航維持中立。」"
+     }
+    ]
+   }
+  },
+  {
+   "id": "https://money.udn.com/money/story/5607/9834831",
+   "title": "聯發科連四周收黑、4,000元關卡拉警報！台股十大權值股誰逆勢抗跌？",
+   "body": "颱風假縮短的一週內大盤下跌 2.27%，聯發科週跌 5.65%、連四週收黑。外資賣超台積電、台達電與聯發科。十大權值股中僅鴻海逆勢上漲，獲法人買超。",
+   "custom": {},
+   "result": {
+    "total": -0.25,
+    "label": "neu",
+    "hits": [
+     {
+      "term": "收黑",
+      "w": -1.5,
+      "note": ""
+     },
+     {
+      "term": "逆勢",
+      "w": 1.5,
+      "note": ""
+     },
+     {
+      "term": "抗跌",
+      "w": 0.75,
+      "note": ""
+     },
+     {
+      "term": "下跌",
+      "w": -1,
+      "note": ""
+     },
+     {
+      "term": "收黑",
+      "w": -1,
+      "note": ""
+     },
+     {
+      "term": "賣超",
+      "w": -1,
+      "note": ""
+     },
+     {
+      "term": "逆勢",
+      "w": 1,
+      "note": ""
+     },
+     {
+      "term": "買超",
+      "w": 1,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 0,
+      "end": 3,
+      "term": "聯發科",
+      "kind": "stock"
+     },
+     {
+      "start": 6,
+      "end": 8,
+      "term": "收黑",
+      "kind": "neg"
+     },
+     {
+      "start": 29,
+      "end": 31,
+      "term": "逆勢",
+      "kind": "pos"
+     },
+     {
+      "start": 31,
+      "end": 33,
+      "term": "抗跌",
+      "kind": "pos"
+     },
+     {
+      "start": 46,
+      "end": 48,
+      "term": "下跌",
+      "kind": "neg"
+     },
+     {
+      "start": 55,
+      "end": 58,
+      "term": "聯發科",
+      "kind": "stock"
+     },
+     {
+      "start": 70,
+      "end": 72,
+      "term": "收黑",
+      "kind": "neg"
+     },
+     {
+      "start": 75,
+      "end": 77,
+      "term": "賣超",
+      "kind": "neg"
+     },
+     {
+      "start": 77,
+      "end": 80,
+      "term": "台積電",
+      "kind": "stock"
+     },
+     {
+      "start": 81,
+      "end": 84,
+      "term": "台達電",
+      "kind": "stock"
+     },
+     {
+      "start": 85,
+      "end": 88,
+      "term": "聯發科",
+      "kind": "stock"
+     },
+     {
+      "start": 96,
+      "end": 98,
+      "term": "鴻海",
+      "kind": "stock"
+     },
+     {
+      "start": 98,
+      "end": 100,
+      "term": "逆勢",
+      "kind": "pos"
+     },
+     {
+      "start": 106,
+      "end": 108,
+      "term": "買超",
+      "kind": "pos"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      21
+     ],
+     [
+      21,
+      34
+     ],
+     [
+      34,
+      35
+     ],
+     [
+      35,
+      73
+     ],
+     [
+      73,
+      89
+     ],
+     [
+      89,
+      109
+     ]
+    ],
+    "sentence_scores": [
+     -1.5,
+     2.25,
+     0,
+     -2,
+     -1,
+     2
+    ],
+    "impacts": [
+     {
+      "code": "2454",
+      "type": "direct",
+      "sector": null,
+      "score": -4.5,
+      "key_sentence": 3,
+      "reason": "新聞直接提及，偏空。關鍵句：「颱風假縮短的一週內大盤下跌 2.27%，聯發科週跌 5.65%、連四週收黑。」"
+     },
+     {
+      "code": "2317",
+      "type": "direct",
+      "sector": null,
+      "score": 2,
+      "key_sentence": 5,
+      "reason": "新聞直接提及，偏多。關鍵句：「十大權值股中僅鴻海逆勢上漲，獲法人買超。」"
+     },
+     {
+      "code": "2330",
+      "type": "direct",
+      "sector": null,
+      "score": -1,
+      "key_sentence": 4,
+      "reason": "新聞直接提及，偏空。關鍵句：「外資賣超台積電、台達電與聯發科。」"
+     },
+     {
+      "code": "2308",
+      "type": "direct",
+      "sector": null,
+      "score": -1,
+      "key_sentence": 4,
+      "reason": "新聞直接提及，偏空。關鍵句：「外資賣超台積電、台達電與聯發科。」"
+     }
+    ]
+   }
+  },
+  {
+   "id": "https://www.cw.com.tw/article/5143403",
+   "title": "天下晨間新聞：費半崩跌6.7%！黃仁勳說出市場最怕的事",
+   "body": "費城半導體指數崩跌 6.7%，台積電 ADR 跌 4.5%，市場對 AI 投資與融資能力的疑慮升高。台股因颱風休市，恢復交易後恐面臨科技股賣壓。",
+   "custom": {},
+   "result": {
+    "total": -7.25,
+    "label": "neg",
+    "hits": [
+     {
+      "term": "崩跌",
+      "w": -3.75,
+      "note": ""
+     },
+     {
+      "term": "崩跌",
+      "w": -2.5,
+      "note": ""
+     },
+     {
+      "term": "賣壓",
+      "w": -1,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 9,
+      "end": 11,
+      "term": "崩跌",
+      "kind": "neg"
+     },
+     {
+      "start": 30,
+      "end": 33,
+      "term": "半導體",
+      "kind": "sector"
+     },
+     {
+      "start": 35,
+      "end": 37,
+      "term": "崩跌",
+      "kind": "neg"
+     },
+     {
+      "start": 43,
+      "end": 46,
+      "term": "台積電",
+      "kind": "stock"
+     },
+     {
+      "start": 97,
+      "end": 99,
+      "term": "賣壓",
+      "kind": "neg"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      16
+     ],
+     [
+      16,
+      28
+     ],
+     [
+      28,
+      78
+     ],
+     [
+      78,
+      100
+     ]
+    ],
+    "sentence_scores": [
+     -3.75,
+     0,
+     -2.5,
+     -1
+    ],
+    "impacts": [
+     {
+      "code": "2330",
+      "type": "direct",
+      "sector": null,
+      "score": -2.5,
+      "key_sentence": 2,
+      "reason": "新聞直接提及，偏空。關鍵句：「費城半導體指數崩跌 6.7%，台積電 ADR 跌 4.5%，市場對 AI 投資與融資能力的疑慮升高。」"
+     },
+     {
+      "code": "2303",
+      "type": "sector",
+      "sector": "晶圓代工",
+      "score": -1.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「晶圓代工」族群，產業連動偏空（取一半分數）"
+     },
+     {
+      "code": "5347",
+      "type": "sector",
+      "sector": "晶圓代工",
+      "score": -1.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「晶圓代工」族群，產業連動偏空（取一半分數）"
+     },
+     {
+      "code": "6770",
+      "type": "sector",
+      "sector": "晶圓代工",
+      "score": -1.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「晶圓代工」族群，產業連動偏空（取一半分數）"
+     }
+    ]
+   }
+  },
+  {
+   "id": "https://www.cw.com.tw/article/5143374",
+   "title": "史上最大外資出逃、台幣淪最弱亞幣 央行總裁楊金龍的最新難題是什麼？",
+   "body": "天下雜誌分析外資創紀錄賣超台股、新台幣成為表現最弱的亞洲貨幣，央行面臨新的政策難題。（本則依標題摘要）",
+   "custom": {},
+   "result": {
+    "total": -3.25,
+    "label": "neg",
+    "hits": [
+     {
+      "term": "出逃",
+      "w": -2.25,
+      "note": ""
+     },
+     {
+      "term": "賣超",
+      "w": -1,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 6,
+      "end": 8,
+      "term": "出逃",
+      "kind": "neg"
+     },
+     {
+      "start": 45,
+      "end": 47,
+      "term": "賣超",
+      "kind": "neg"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      33
+     ],
+     [
+      33,
+      34
+     ],
+     [
+      34,
+      76
+     ],
+     [
+      76,
+      85
+     ]
+    ],
+    "sentence_scores": [
+     -2.25,
+     0,
+     -1,
+     0
+    ],
+    "impacts": []
+   }
+  },
+  {
+   "id": "https://money.udn.com/money/story/5607/9838135",
+   "title": "大摩：欣興與輝達的協議有助降低潛在產能過剩風險 重申目標價1,775元",
+   "body": "摩根士丹利指出欣興與輝達簽訂產能保留協議，可降低產能過剩風險，並預估明年 ABF 載板報價上漲逾兩成五、供給持續吃緊，重申優於大盤評等。美銀也調高欣興目標價。",
+   "custom": {},
+   "result": {
+    "total": 11.5,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "產能過剩",
+      "w": 3,
+      "note": "否定"
+     },
+     {
+      "term": "產能過剩",
+      "w": 2,
+      "note": "否定"
+     },
+     {
+      "term": "報價上漲",
+      "w": 2,
+      "note": ""
+     },
+     {
+      "term": "吃緊",
+      "w": 1.5,
+      "note": "加強"
+     },
+     {
+      "term": "優於大盤",
+      "w": 1.5,
+      "note": ""
+     },
+     {
+      "term": "調高",
+      "w": 1.5,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 3,
+      "end": 5,
+      "term": "欣興",
+      "kind": "stock"
+     },
+     {
+      "start": 17,
+      "end": 21,
+      "term": "產能過剩",
+      "kind": "neg"
+     },
+     {
+      "start": 43,
+      "end": 45,
+      "term": "欣興",
+      "kind": "stock"
+     },
+     {
+      "start": 60,
+      "end": 64,
+      "term": "產能過剩",
+      "kind": "neg"
+     },
+     {
+      "start": 73,
+      "end": 76,
+      "term": "ABF",
+      "kind": "sector"
+     },
+     {
+      "start": 77,
+      "end": 79,
+      "term": "載板",
+      "kind": "sector"
+     },
+     {
+      "start": 79,
+      "end": 83,
+      "term": "報價上漲",
+      "kind": "pos"
+     },
+     {
+      "start": 92,
+      "end": 94,
+      "term": "吃緊",
+      "kind": "pos"
+     },
+     {
+      "start": 97,
+      "end": 101,
+      "term": "優於大盤",
+      "kind": "pos"
+     },
+     {
+      "start": 107,
+      "end": 109,
+      "term": "調高",
+      "kind": "pos"
+     },
+     {
+      "start": 109,
+      "end": 111,
+      "term": "欣興",
+      "kind": "stock"
+     }
+    ],
+    "negators": [
+     {
+      "start": 13,
+      "end": 15
+     },
+     {
+      "start": 58,
+      "end": 60
+     }
+    ],
+    "sentences": [
+     [
+      0,
+      36
+     ],
+     [
+      36,
+      104
+     ],
+     [
+      104,
+      115
+     ]
+    ],
+    "sentence_scores": [
+     3,
+     7,
+     1.5
+    ],
+    "impacts": [
+     {
+      "code": "3037",
+      "type": "direct",
+      "sector": null,
+      "score": 11.5,
+      "key_sentence": 1,
+      "reason": "新聞直接提及，偏多。關鍵句：「摩根士丹利指出欣興與輝達簽訂產能保留協議，可降低產能過剩風險，並預估明年 ABF 載板報價上漲逾兩成五、供給持續吃緊，重…」"
+     },
+     {
+      "code": "4958",
+      "type": "sector",
+      "sector": "PCB",
+      "score": 3.5,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「PCB」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "8021",
+      "type": "sector",
+      "sector": "PCB",
+      "score": 3.5,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「PCB」族群，產業連動偏多（取一半分數）"
+     }
+    ]
+   }
+  },
+  {
+   "id": "https://tw.news.yahoo.com/%E7%9B%A4%E5%89%8D-%E5%A4%96%E8%B3%87%E6%8A%95%E4%BF%A1%E7%88%AD%E6%90%B6-%E5%A4%A7%E8%88%89%E5%8A%A0%E7%A2%BC-%E9%80%99%E6%AA%94-2-213500143.html",
+   "title": "【盤前】外資投信爭搶 大舉加碼「這檔」2.8萬張！20萬股東嗨翻天",
+   "body": "10 月 22 日大盤下跌 846 點。在賣壓中，台玻逆勢獲外資與投信合計買超約 2.8 萬張。",
+   "custom": {},
+   "result": {
+    "total": 2.25,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "加碼",
+      "w": 2.25,
+      "note": ""
+     },
+     {
+      "term": "下跌",
+      "w": -1,
+      "note": ""
+     },
+     {
+      "term": "賣壓",
+      "w": -1,
+      "note": ""
+     },
+     {
+      "term": "逆勢",
+      "w": 1,
+      "note": ""
+     },
+     {
+      "term": "買超",
+      "w": 1,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 13,
+      "end": 15,
+      "term": "加碼",
+      "kind": "pos"
+     },
+     {
+      "start": 45,
+      "end": 47,
+      "term": "下跌",
+      "kind": "neg"
+     },
+     {
+      "start": 55,
+      "end": 57,
+      "term": "賣壓",
+      "kind": "neg"
+     },
+     {
+      "start": 59,
+      "end": 61,
+      "term": "台玻",
+      "kind": "stock"
+     },
+     {
+      "start": 61,
+      "end": 63,
+      "term": "逆勢",
+      "kind": "pos"
+     },
+     {
+      "start": 71,
+      "end": 73,
+      "term": "買超",
+      "kind": "pos"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      25
+     ],
+     [
+      25,
+      34
+     ],
+     [
+      34,
+      54
+     ],
+     [
+      54,
+      82
+     ]
+    ],
+    "sentence_scores": [
+     2.25,
+     0,
+     -1,
+     1
+    ],
+    "impacts": [
+     {
+      "code": "1802",
+      "type": "direct",
+      "sector": null,
+      "score": 1,
+      "key_sentence": 3,
+      "reason": "新聞直接提及，偏多。關鍵句：「在賣壓中，台玻逆勢獲外資與投信合計買超約 2.8 萬張。」"
+     }
+    ]
+   }
+  },
+  {
+   "id": "https://money.udn.com/money/story/5607/9816882",
+   "title": "AI需求把MLCC、電阻吃緊 華新科B/B升至1.8 轉單、漲價雙利多啟動",
+   "body": "AI伺服器與高速通訊帶動 MLCC 與電阻需求吃緊，華新科接單出貨比升至 1.8，客戶轉單與漲價可望推升營收，並持續擴產。",
+   "custom": {},
+   "result": {
+    "total": 13,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "吃緊",
+      "w": 1.5,
+      "note": ""
+     },
+     {
+      "term": "漲價",
+      "w": 3,
+      "note": ""
+     },
+     {
+      "term": "利多",
+      "w": 2.25,
+      "note": ""
+     },
+     {
+      "term": "吃緊",
+      "w": 1,
+      "note": ""
+     },
+     {
+      "term": "接單",
+      "w": 1,
+      "note": ""
+     },
+     {
+      "term": "漲價",
+      "w": 2,
+      "note": ""
+     },
+     {
+      "term": "擴產",
+      "w": 2.25,
+      "note": "加強"
+     }
+    ],
+    "matches": [
+     {
+      "start": 5,
+      "end": 9,
+      "term": "MLCC",
+      "kind": "sector"
+     },
+     {
+      "start": 12,
+      "end": 14,
+      "term": "吃緊",
+      "kind": "pos"
+     },
+     {
+      "start": 15,
+      "end": 18,
+      "term": "華新科",
+      "kind": "stock"
+     },
+     {
+      "start": 30,
+      "end": 32,
+      "term": "漲價",
+      "kind": "pos"
+     },
+     {
+      "start": 33,
+      "end": 35,
+      "term": "利多",
+      "kind": "pos"
+     },
+     {
+      "start": 38,
+      "end": 43,
+      "term": "AI伺服器",
+      "kind": "sector"
+     },
+     {
+      "start": 51,
+      "end": 55,
+      "term": "MLCC",
+      "kind": "sector"
+     },
+     {
+      "start": 61,
+      "end": 63,
+      "term": "吃緊",
+      "kind": "pos"
+     },
+     {
+      "start": 64,
+      "end": 67,
+      "term": "華新科",
+      "kind": "stock"
+     },
+     {
+      "start": 67,
+      "end": 69,
+      "term": "接單",
+      "kind": "pos"
+     },
+     {
+      "start": 84,
+      "end": 86,
+      "term": "漲價",
+      "kind": "pos"
+     },
+     {
+      "start": 96,
+      "end": 98,
+      "term": "擴產",
+      "kind": "pos"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      38
+     ],
+     [
+      38,
+      99
+     ]
+    ],
+    "sentence_scores": [
+     6.75,
+     6.25
+    ],
+    "impacts": [
+     {
+      "code": "2492",
+      "type": "direct",
+      "sector": null,
+      "score": 13,
+      "key_sentence": 0,
+      "reason": "新聞直接提及，偏多。關鍵句：「AI需求把MLCC、電阻吃緊 華新科B/B升至1.8 轉單、漲價雙利多啟動」"
+     },
+     {
+      "code": "2327",
+      "type": "sector",
+      "sector": "被動元件",
+      "score": 6.5,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「被動元件」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "2317",
+      "type": "sector",
+      "sector": "AI伺服器",
+      "score": 3.125,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「AI伺服器」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "2382",
+      "type": "sector",
+      "sector": "AI伺服器",
+      "score": 3.125,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「AI伺服器」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "3231",
+      "type": "sector",
+      "sector": "AI伺服器",
+      "score": 3.125,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「AI伺服器」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "6669",
+      "type": "sector",
+      "sector": "AI伺服器",
+      "score": 3.125,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「AI伺服器」族群，產業連動偏多（取一半分數）"
+     }
+    ]
+   }
+  },
+  {
+   "id": "https://www.businessweekly.com.tw/business/blog/3023445",
+   "title": "南亞科淨利暴增，股價為何跳水？破解「長鑫恐慌」：2028年才是關鍵戰場",
+   "body": "商業周刊分析南亞科獲利大幅成長，股價卻重挫，主因市場擔心中國長鑫的競爭壓力。（本則依標題摘要）",
+   "custom": {},
+   "result": {
+    "total": -4.5,
+    "label": "neg",
+    "hits": [
+     {
+      "term": "暴增",
+      "w": 3,
+      "note": ""
+     },
+     {
+      "term": "跳水",
+      "w": -3,
+      "note": ""
+     },
+     {
+      "term": "恐慌",
+      "w": -1.5,
+      "note": ""
+     },
+     {
+      "term": "重挫",
+      "w": -2,
+      "note": ""
+     },
+     {
+      "term": "壓力",
+      "w": -1,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 0,
+      "end": 3,
+      "term": "南亞科",
+      "kind": "stock"
+     },
+     {
+      "start": 5,
+      "end": 7,
+      "term": "暴增",
+      "kind": "pos"
+     },
+     {
+      "start": 12,
+      "end": 14,
+      "term": "跳水",
+      "kind": "neg"
+     },
+     {
+      "start": 20,
+      "end": 22,
+      "term": "恐慌",
+      "kind": "neg"
+     },
+     {
+      "start": 42,
+      "end": 45,
+      "term": "南亞科",
+      "kind": "stock"
+     },
+     {
+      "start": 55,
+      "end": 57,
+      "term": "重挫",
+      "kind": "neg"
+     },
+     {
+      "start": 71,
+      "end": 73,
+      "term": "壓力",
+      "kind": "neg"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      15
+     ],
+     [
+      15,
+      36
+     ],
+     [
+      36,
+      74
+     ],
+     [
+      74,
+      83
+     ]
+    ],
+    "sentence_scores": [
+     0,
+     -1.5,
+     -3,
+     0
+    ],
+    "impacts": [
+     {
+      "code": "2408",
+      "type": "direct",
+      "sector": null,
+      "score": -3,
+      "key_sentence": 2,
+      "reason": "新聞直接提及，偏空。關鍵句：「商業周刊分析南亞科獲利大幅成長，股價卻重挫，主因市場擔心中國長鑫的競爭壓力。」"
+     }
+    ]
+   }
+  },
+  {
+   "id": "https://money.udn.com/money/story/5612/9817314",
+   "title": "台股大跌1655點 金管會：跌幅亞洲中段、密切注意",
+   "body": "受美國通膨疑慮與晶片股賣壓拖累，台股大跌 1,655 點、跌幅 3.41%，半導體族群最弱。",
+   "custom": {},
+   "result": {
+    "total": -4.75,
+    "label": "neg",
+    "hits": [
+     {
+      "term": "大跌",
+      "w": -2.25,
+      "note": ""
+     },
+     {
+      "term": "賣壓",
+      "w": -1,
+      "note": ""
+     },
+     {
+      "term": "大跌",
+      "w": -1.5,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 2,
+      "end": 4,
+      "term": "大跌",
+      "kind": "neg"
+     },
+     {
+      "start": 37,
+      "end": 39,
+      "term": "賣壓",
+      "kind": "neg"
+     },
+     {
+      "start": 44,
+      "end": 46,
+      "term": "大跌",
+      "kind": "neg"
+     },
+     {
+      "start": 64,
+      "end": 67,
+      "term": "半導體",
+      "kind": "sector"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      26
+     ],
+     [
+      26,
+      72
+     ]
+    ],
+    "sentence_scores": [
+     -2.25,
+     -2.5
+    ],
+    "impacts": [
+     {
+      "code": "2330",
+      "type": "sector",
+      "sector": "晶圓代工",
+      "score": -1.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「晶圓代工」族群，產業連動偏空（取一半分數）"
+     },
+     {
+      "code": "2303",
+      "type": "sector",
+      "sector": "晶圓代工",
+      "score": -1.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「晶圓代工」族群，產業連動偏空（取一半分數）"
+     },
+     {
+      "code": "5347",
+      "type": "sector",
+      "sector": "晶圓代工",
+      "score": -1.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「晶圓代工」族群，產業連動偏空（取一半分數）"
+     },
+     {
+      "code": "6770",
+      "type": "sector",
+      "sector": "晶圓代工",
+      "score": -1.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「晶圓代工」族群，產業連動偏空（取一半分數）"
+     }
+    ]
+   }
+  },
+  {
+   "id": "https://money.udn.com/money/story/5607/9811764",
+   "title": "上市櫃公司9月營收續締新猷 法人建議優先關注這幾檔",
+   "body": "上市櫃公司 9 月營收續創新高，近八成科技族群第三季營收達標或優於預期。法人建議逢回優先關注和碩、創意、緯穎、頎邦、聯茂、台光電與欣興。",
+   "custom": {},
+   "result": {
+    "total": 4.5,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "續創新高",
+      "w": 2.5,
+      "note": ""
+     },
+     {
+      "term": "優於預期",
+      "w": 2,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 37,
+      "end": 41,
+      "term": "續創新高",
+      "kind": "pos"
+     },
+     {
+      "start": 57,
+      "end": 61,
+      "term": "優於預期",
+      "kind": "pos"
+     },
+     {
+      "start": 72,
+      "end": 74,
+      "term": "和碩",
+      "kind": "stock"
+     },
+     {
+      "start": 75,
+      "end": 77,
+      "term": "創意",
+      "kind": "stock"
+     },
+     {
+      "start": 78,
+      "end": 80,
+      "term": "緯穎",
+      "kind": "stock"
+     },
+     {
+      "start": 81,
+      "end": 83,
+      "term": "頎邦",
+      "kind": "stock"
+     },
+     {
+      "start": 84,
+      "end": 86,
+      "term": "聯茂",
+      "kind": "stock"
+     },
+     {
+      "start": 87,
+      "end": 90,
+      "term": "台光電",
+      "kind": "stock"
+     },
+     {
+      "start": 91,
+      "end": 93,
+      "term": "欣興",
+      "kind": "stock"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      26
+     ],
+     [
+      26,
+      62
+     ],
+     [
+      62,
+      94
+     ]
+    ],
+    "sentence_scores": [
+     0,
+     4.5,
+     0
+    ],
+    "impacts": [
+     {
+      "code": "4938",
+      "type": "direct",
+      "sector": null,
+      "score": 2.25,
+      "key_sentence": 2,
+      "reason": "新聞直接提及，偏多。關鍵句：「法人建議逢回優先關注和碩、創意、緯穎、頎邦、聯茂、台光電與欣興。」"
+     },
+     {
+      "code": "3443",
+      "type": "direct",
+      "sector": null,
+      "score": 2.25,
+      "key_sentence": 2,
+      "reason": "新聞直接提及，偏多。關鍵句：「法人建議逢回優先關注和碩、創意、緯穎、頎邦、聯茂、台光電與欣興。」"
+     },
+     {
+      "code": "6669",
+      "type": "direct",
+      "sector": null,
+      "score": 2.25,
+      "key_sentence": 2,
+      "reason": "新聞直接提及，偏多。關鍵句：「法人建議逢回優先關注和碩、創意、緯穎、頎邦、聯茂、台光電與欣興。」"
+     },
+     {
+      "code": "6147",
+      "type": "direct",
+      "sector": null,
+      "score": 2.25,
+      "key_sentence": 2,
+      "reason": "新聞直接提及，偏多。關鍵句：「法人建議逢回優先關注和碩、創意、緯穎、頎邦、聯茂、台光電與欣興。」"
+     },
+     {
+      "code": "6213",
+      "type": "direct",
+      "sector": null,
+      "score": 2.25,
+      "key_sentence": 2,
+      "reason": "新聞直接提及，偏多。關鍵句：「法人建議逢回優先關注和碩、創意、緯穎、頎邦、聯茂、台光電與欣興。」"
+     },
+     {
+      "code": "2383",
+      "type": "direct",
+      "sector": null,
+      "score": 2.25,
+      "key_sentence": 2,
+      "reason": "新聞直接提及，偏多。關鍵句：「法人建議逢回優先關注和碩、創意、緯穎、頎邦、聯茂、台光電與欣興。」"
+     },
+     {
+      "code": "3037",
+      "type": "direct",
+      "sector": null,
+      "score": 2.25,
+      "key_sentence": 2,
+      "reason": "新聞直接提及，偏多。關鍵句：「法人建議逢回優先關注和碩、創意、緯穎、頎邦、聯茂、台光電與欣興。」"
+     }
+    ]
+   }
+  },
+  {
+   "id": "https://ec.ltn.com.tw/article/breakingnews/5520293",
+   "title": "長鑫掛牌添壓力？南亞科跌停鎖死 股民悲喊「跌到懷疑人生」",
+   "body": "中國 DRAM 廠長鑫 A 股掛牌首日大漲，市場擔心競爭加劇，南亞科開盤即跌停，收盤仍有大量賣單掛在跌停價。",
+   "custom": {},
+   "result": {
+    "total": -8.25,
+    "label": "neg",
+    "hits": [
+     {
+      "term": "壓力",
+      "w": -1.5,
+      "note": ""
+     },
+     {
+      "term": "跌停",
+      "w": -2.25,
+      "note": ""
+     },
+     {
+      "term": "競爭加劇",
+      "w": -1.5,
+      "note": ""
+     },
+     {
+      "term": "跌停",
+      "w": -1.5,
+      "note": ""
+     },
+     {
+      "term": "跌停",
+      "w": -1.5,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 5,
+      "end": 7,
+      "term": "壓力",
+      "kind": "neg"
+     },
+     {
+      "start": 8,
+      "end": 11,
+      "term": "南亞科",
+      "kind": "stock"
+     },
+     {
+      "start": 11,
+      "end": 13,
+      "term": "跌停",
+      "kind": "neg"
+     },
+     {
+      "start": 32,
+      "end": 36,
+      "term": "DRAM",
+      "kind": "sector"
+     },
+     {
+      "start": 55,
+      "end": 59,
+      "term": "競爭加劇",
+      "kind": "neg"
+     },
+     {
+      "start": 60,
+      "end": 63,
+      "term": "南亞科",
+      "kind": "stock"
+     },
+     {
+      "start": 66,
+      "end": 68,
+      "term": "跌停",
+      "kind": "neg"
+     },
+     {
+      "start": 79,
+      "end": 81,
+      "term": "跌停",
+      "kind": "neg"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      8
+     ],
+     [
+      8,
+      29
+     ],
+     [
+      29,
+      83
+     ]
+    ],
+    "sentence_scores": [
+     -1.5,
+     -2.25,
+     -4.5
+    ],
+    "impacts": [
+     {
+      "code": "2408",
+      "type": "direct",
+      "sector": null,
+      "score": -6.75,
+      "key_sentence": 2,
+      "reason": "新聞直接提及，偏空。關鍵句：「中國 DRAM 廠長鑫 A 股掛牌首日大漲，市場擔心競爭加劇，南亞科開盤即跌停，收盤仍有大量賣單掛在跌停價。」"
+     },
+     {
+      "code": "6770",
+      "type": "sector",
+      "sector": "記憶體",
+      "score": -2.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「記憶體」族群，產業連動偏空（取一半分數）"
+     },
+     {
+      "code": "6239",
+      "type": "sector",
+      "sector": "記憶體",
+      "score": -2.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「記憶體」族群，產業連動偏空（取一半分數）"
+     },
+     {
+      "code": "2344",
+      "type": "sector",
+      "sector": "記憶體",
+      "score": -2.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「記憶體」族群，產業連動偏空（取一半分數）"
+     },
+     {
+      "code": "2337",
+      "type": "sector",
+      "sector": "記憶體",
+      "score": -2.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「記憶體」族群，產業連動偏空（取一半分數）"
+     }
+    ]
+   }
+  },
+  {
+   "id": "try-default",
+   "title": "航空股布局時機到了？2027年油價降 法人看好這兩檔",
+   "body": "法人指出第四季油價上漲，航空公司獲利面臨壓力。但預估 2027 年油價下跌約兩成，獲利可望回升，給予華航、台灣虎航買進評等，長榮航維持中立。",
+   "custom": {},
+   "result": {
+    "total": 4.25,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "油價降",
+      "w": 2.25,
+      "note": ""
+     },
+     {
+      "term": "看好",
+      "w": 1.5,
+      "note": ""
+     },
+     {
+      "term": "油價上漲",
+      "w": -1.5,
+      "note": ""
+     },
+     {
+      "term": "壓力",
+      "w": -1,
+      "note": ""
+     },
+     {
+      "term": "油價下跌",
+      "w": 1.5,
+      "note": ""
+     },
+     {
+      "term": "買進",
+      "w": 1.5,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 0,
+      "end": 2,
+      "term": "航空",
+      "kind": "sector"
+     },
+     {
+      "start": 15,
+      "end": 18,
+      "term": "油價降",
+      "kind": "pos"
+     },
+     {
+      "start": 21,
+      "end": 23,
+      "term": "看好",
+      "kind": "pos"
+     },
+     {
+      "start": 34,
+      "end": 38,
+      "term": "油價上漲",
+      "kind": "neg"
+     },
+     {
+      "start": 39,
+      "end": 41,
+      "term": "航空",
+      "kind": "sector"
+     },
+     {
+      "start": 47,
+      "end": 49,
+      "term": "壓力",
+      "kind": "neg"
+     },
+     {
+      "start": 60,
+      "end": 64,
+      "term": "油價下跌",
+      "kind": "pos"
+     },
+     {
+      "start": 77,
+      "end": 79,
+      "term": "華航",
+      "kind": "stock"
+     },
+     {
+      "start": 80,
+      "end": 84,
+      "term": "台灣虎航",
+      "kind": "stock"
+     },
+     {
+      "start": 84,
+      "end": 86,
+      "term": "買進",
+      "kind": "pos"
+     },
+     {
+      "start": 89,
+      "end": 92,
+      "term": "長榮航",
+      "kind": "stock"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      10
+     ],
+     [
+      10,
+      27
+     ],
+     [
+      27,
+      50
+     ],
+     [
+      50,
+      97
+     ]
+    ],
+    "sentence_scores": [
+     0,
+     3.75,
+     -2.5,
+     3
+    ],
+    "impacts": [
+     {
+      "code": "2610",
+      "type": "direct",
+      "sector": null,
+      "score": 3,
+      "key_sentence": 3,
+      "reason": "新聞直接提及，偏多。關鍵句：「但預估 2027 年油價下跌約兩成，獲利可望回升，給予華航、台灣虎航買進評等，長榮航維持中立。」"
+     },
+     {
+      "code": "6757",
+      "type": "direct",
+      "sector": null,
+      "score": 3,
+      "key_sentence": 3,
+      "reason": "新聞直接提及，偏多。關鍵句：「但預估 2027 年油價下跌約兩成，獲利可望回升，給予華航、台灣虎航買進評等，長榮航維持中立。」"
+     },
+     {
+      "code": "2618",
+      "type": "direct",
+      "sector": null,
+      "score": 3,
+      "key_sentence": 3,
+      "reason": "新聞直接提及，偏多。關鍵句：「但預估 2027 年油價下跌約兩成，獲利可望回升，給予華航、台灣虎航買進評等，長榮航維持中立。」"
+     }
+    ]
+   }
+  },
+  {
+   "id": "neg-not",
+   "title": "法說會",
+   "body": "公司表示未見砍單，訂單能見度到明年。",
+   "custom": {},
+   "result": {
+    "total": 3.5,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "砍單",
+      "w": 2.5,
+      "note": "否定"
+     },
+     {
+      "term": "訂單",
+      "w": 1,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 10,
+      "end": 12,
+      "term": "砍單",
+      "kind": "neg"
+     },
+     {
+      "start": 13,
+      "end": 15,
+      "term": "訂單",
+      "kind": "pos"
+     }
+    ],
+    "negators": [
+     {
+      "start": 8,
+      "end": 9
+     }
+    ],
+    "sentences": [
+     [
+      0,
+      4
+     ],
+     [
+      4,
+      22
+     ]
+    ],
+    "sentence_scores": [
+     0,
+     3.5
+    ],
+    "impacts": []
+   }
+  },
+  {
+   "id": "neg-reduce",
+   "title": "",
+   "body": "協議可降低產能過剩風險。",
+   "custom": {},
+   "result": {
+    "total": 2,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "產能過剩",
+      "w": 2,
+      "note": "否定"
+     }
+    ],
+    "matches": [
+     {
+      "start": 6,
+      "end": 10,
+      "term": "產能過剩",
+      "kind": "neg"
+     }
+    ],
+    "negators": [
+     {
+      "start": 4,
+      "end": 6
+     }
+    ],
+    "sentences": [
+     [
+      0,
+      1
+     ],
+     [
+      1,
+      13
+     ]
+    ],
+    "sentence_scores": [
+     0,
+     2
+    ],
+    "impacts": []
+   }
+  },
+  {
+   "id": "neg-cut-by-comma",
+   "title": "",
+   "body": "雖然不，營收成長。",
+   "custom": {},
+   "result": {
+    "total": 2,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "營收成長",
+      "w": 2,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 5,
+      "end": 9,
+      "term": "營收成長",
+      "kind": "pos"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      1
+     ],
+     [
+      1,
+      10
+     ]
+    ],
+    "sentence_scores": [
+     0,
+     2
+    ],
+    "impacts": []
+   }
+  },
+  {
+   "id": "not-neg-words",
+   "title": "",
+   "body": "不斷創新高，不少法人看好。無論如何營收成長。",
+   "custom": {},
+   "result": {
+    "total": 5.5,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "創新高",
+      "w": 2.5,
+      "note": ""
+     },
+     {
+      "term": "看好",
+      "w": 1,
+      "note": ""
+     },
+     {
+      "term": "營收成長",
+      "w": 2,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 3,
+      "end": 6,
+      "term": "創新高",
+      "kind": "pos"
+     },
+     {
+      "start": 11,
+      "end": 13,
+      "term": "看好",
+      "kind": "pos"
+     },
+     {
+      "start": 18,
+      "end": 22,
+      "term": "營收成長",
+      "kind": "pos"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      1
+     ],
+     [
+      1,
+      14
+     ],
+     [
+      14,
+      23
+     ]
+    ],
+    "sentence_scores": [
+     0,
+     3.5,
+     2
+    ],
+    "impacts": []
+   }
+  },
+  {
+   "id": "boost",
+   "title": "",
+   "body": "需求大幅成長，營收大幅衰退，明顯優於預期。",
+   "custom": {},
+   "result": {
+    "total": 0,
+    "label": "neu",
+    "hits": [
+     {
+      "term": "衰退",
+      "w": -3,
+      "note": "加強"
+     },
+     {
+      "term": "優於預期",
+      "w": 3,
+      "note": "加強"
+     }
+    ],
+    "matches": [
+     {
+      "start": 12,
+      "end": 14,
+      "term": "衰退",
+      "kind": "neg"
+     },
+     {
+      "start": 17,
+      "end": 21,
+      "term": "優於預期",
+      "kind": "pos"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      1
+     ],
+     [
+      1,
+      22
+     ]
+    ],
+    "sentence_scores": [
+     0,
+     0
+    ],
+    "impacts": []
+   }
+  },
+  {
+   "id": "boost-and-neg",
+   "title": "",
+   "body": "營收並非大幅衰退。",
+   "custom": {},
+   "result": {
+    "total": 3,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "衰退",
+      "w": 3,
+      "note": "否定、加強"
+     }
+    ],
+    "matches": [
+     {
+      "start": 7,
+      "end": 9,
+      "term": "衰退",
+      "kind": "neg"
+     }
+    ],
+    "negators": [
+     {
+      "start": 3,
+      "end": 5
+     }
+    ],
+    "sentences": [
+     [
+      0,
+      1
+     ],
+     [
+      1,
+      10
+     ]
+    ],
+    "sentence_scores": [
+     0,
+     3
+    ],
+    "impacts": []
+   }
+  },
+  {
+   "id": "title-weight",
+   "title": "台積電創新高",
+   "body": "台積電創新高。",
+   "custom": {},
+   "result": {
+    "total": 6.25,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "創新高",
+      "w": 3.75,
+      "note": ""
+     },
+     {
+      "term": "創新高",
+      "w": 2.5,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 0,
+      "end": 3,
+      "term": "台積電",
+      "kind": "stock"
+     },
+     {
+      "start": 3,
+      "end": 6,
+      "term": "創新高",
+      "kind": "pos"
+     },
+     {
+      "start": 7,
+      "end": 10,
+      "term": "台積電",
+      "kind": "stock"
+     },
+     {
+      "start": 10,
+      "end": 13,
+      "term": "創新高",
+      "kind": "pos"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      7
+     ],
+     [
+      7,
+      14
+     ]
+    ],
+    "sentence_scores": [
+     3.75,
+     2.5
+    ],
+    "impacts": [
+     {
+      "code": "2330",
+      "type": "direct",
+      "sector": null,
+      "score": 6.25,
+      "key_sentence": 0,
+      "reason": "新聞直接提及，偏多。關鍵句：「台積電創新高」"
+     }
+    ]
+   }
+  },
+  {
+   "id": "longest-match",
+   "title": "",
+   "body": "南亞科跌停，油價上漲，報價上漲。",
+   "custom": {},
+   "result": {
+    "total": -1,
+    "label": "neg",
+    "hits": [
+     {
+      "term": "跌停",
+      "w": -1.5,
+      "note": ""
+     },
+     {
+      "term": "油價上漲",
+      "w": -1.5,
+      "note": ""
+     },
+     {
+      "term": "報價上漲",
+      "w": 2,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 1,
+      "end": 4,
+      "term": "南亞科",
+      "kind": "stock"
+     },
+     {
+      "start": 4,
+      "end": 6,
+      "term": "跌停",
+      "kind": "neg"
+     },
+     {
+      "start": 7,
+      "end": 11,
+      "term": "油價上漲",
+      "kind": "neg"
+     },
+     {
+      "start": 12,
+      "end": 16,
+      "term": "報價上漲",
+      "kind": "pos"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      1
+     ],
+     [
+      1,
+      17
+     ]
+    ],
+    "sentence_scores": [
+     0,
+     -1
+    ],
+    "impacts": [
+     {
+      "code": "2408",
+      "type": "direct",
+      "sector": null,
+      "score": -1,
+      "key_sentence": 1,
+      "reason": "新聞直接提及，偏空。關鍵句：「南亞科跌停，油價上漲，報價上漲。」"
+     }
+    ]
+   }
+  },
+  {
+   "id": "direct-no-sentiment",
+   "title": "台積電營收成長",
+   "body": "聯電今日召開董事會。",
+   "custom": {},
+   "result": {
+    "total": 3,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "營收成長",
+      "w": 3,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 0,
+      "end": 3,
+      "term": "台積電",
+      "kind": "stock"
+     },
+     {
+      "start": 3,
+      "end": 7,
+      "term": "營收成長",
+      "kind": "pos"
+     },
+     {
+      "start": 8,
+      "end": 10,
+      "term": "聯電",
+      "kind": "stock"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      8
+     ],
+     [
+      8,
+      18
+     ]
+    ],
+    "sentence_scores": [
+     3,
+     0
+    ],
+    "impacts": [
+     {
+      "code": "2330",
+      "type": "direct",
+      "sector": null,
+      "score": 3,
+      "key_sentence": 0,
+      "reason": "新聞直接提及，偏多。關鍵句：「台積電營收成長」"
+     },
+     {
+      "code": "2303",
+      "type": "direct",
+      "sector": null,
+      "score": 1.5,
+      "key_sentence": 1,
+      "reason": "新聞直接提及，偏多。關鍵句：「聯電今日召開董事會。」"
+     }
+    ]
+   }
+  },
+  {
+   "id": "direct-cancel-out",
+   "title": "",
+   "body": "華邦電營收成長但虧損。南亞科漲停。",
+   "custom": {},
+   "result": {
+    "total": 1,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "營收成長",
+      "w": 2,
+      "note": ""
+     },
+     {
+      "term": "虧損",
+      "w": -2.5,
+      "note": ""
+     },
+     {
+      "term": "漲停",
+      "w": 1.5,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 1,
+      "end": 4,
+      "term": "華邦電",
+      "kind": "stock"
+     },
+     {
+      "start": 4,
+      "end": 8,
+      "term": "營收成長",
+      "kind": "pos"
+     },
+     {
+      "start": 9,
+      "end": 11,
+      "term": "虧損",
+      "kind": "neg"
+     },
+     {
+      "start": 12,
+      "end": 15,
+      "term": "南亞科",
+      "kind": "stock"
+     },
+     {
+      "start": 15,
+      "end": 17,
+      "term": "漲停",
+      "kind": "pos"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      1
+     ],
+     [
+      1,
+      12
+     ],
+     [
+      12,
+      18
+     ]
+    ],
+    "sentence_scores": [
+     0,
+     -0.5,
+     1.5
+    ],
+    "impacts": [
+     {
+      "code": "2408",
+      "type": "direct",
+      "sector": null,
+      "score": 1.5,
+      "key_sentence": 2,
+      "reason": "新聞直接提及，偏多。關鍵句：「南亞科漲停。」"
+     },
+     {
+      "code": "2344",
+      "type": "direct",
+      "sector": null,
+      "score": -0.5,
+      "key_sentence": 1,
+      "reason": "新聞直接提及，偏空。關鍵句：「華邦電營收成長但虧損。」"
+     }
+    ]
+   }
+  },
+  {
+   "id": "sector-only",
+   "title": "DRAM 報價上漲",
+   "body": "記憶體供不應求，HBM 吃緊。",
+   "custom": {},
+   "result": {
+    "total": 6.5,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "報價上漲",
+      "w": 3,
+      "note": ""
+     },
+     {
+      "term": "供不應求",
+      "w": 2.5,
+      "note": ""
+     },
+     {
+      "term": "吃緊",
+      "w": 1,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 0,
+      "end": 4,
+      "term": "DRAM",
+      "kind": "sector"
+     },
+     {
+      "start": 5,
+      "end": 9,
+      "term": "報價上漲",
+      "kind": "pos"
+     },
+     {
+      "start": 10,
+      "end": 13,
+      "term": "記憶體",
+      "kind": "sector"
+     },
+     {
+      "start": 13,
+      "end": 17,
+      "term": "供不應求",
+      "kind": "pos"
+     },
+     {
+      "start": 18,
+      "end": 21,
+      "term": "HBM",
+      "kind": "sector"
+     },
+     {
+      "start": 22,
+      "end": 24,
+      "term": "吃緊",
+      "kind": "pos"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      10
+     ],
+     [
+      10,
+      25
+     ]
+    ],
+    "sentence_scores": [
+     3,
+     3.5
+    ],
+    "impacts": [
+     {
+      "code": "6770",
+      "type": "sector",
+      "sector": "記憶體",
+      "score": 3.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「記憶體」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "6239",
+      "type": "sector",
+      "sector": "記憶體",
+      "score": 3.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「記憶體」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "2408",
+      "type": "sector",
+      "sector": "記憶體",
+      "score": 3.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「記憶體」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "2344",
+      "type": "sector",
+      "sector": "記憶體",
+      "score": 3.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「記憶體」族群，產業連動偏多（取一半分數）"
+     }
+    ]
+   }
+  },
+  {
+   "id": "sector-fallback-total",
+   "title": "",
+   "body": "法人看好。CoWoS 產能。",
+   "custom": {},
+   "result": {
+    "total": 1,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "看好",
+      "w": 1,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 3,
+      "end": 5,
+      "term": "看好",
+      "kind": "pos"
+     },
+     {
+      "start": 6,
+      "end": 11,
+      "term": "CoWoS",
+      "kind": "sector"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      1
+     ],
+     [
+      1,
+      6
+     ],
+     [
+      6,
+      15
+     ]
+    ],
+    "sentence_scores": [
+     0,
+     1,
+     0
+    ],
+    "impacts": [
+     {
+      "code": "2330",
+      "type": "sector",
+      "sector": "先進封裝",
+      "score": 0.5,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「先進封裝」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "3711",
+      "type": "sector",
+      "sector": "先進封裝",
+      "score": 0.5,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「先進封裝」族群，產業連動偏多（取一半分數）"
+     }
+    ]
+   }
+  },
+  {
+   "id": "sector-below-threshold",
+   "title": "",
+   "body": "航空股跟進。",
+   "custom": {},
+   "result": {
+    "total": 0.5,
+    "label": "neu",
+    "hits": [
+     {
+      "term": "跟進",
+      "w": 0.5,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 1,
+      "end": 3,
+      "term": "航空",
+      "kind": "sector"
+     },
+     {
+      "start": 4,
+      "end": 6,
+      "term": "跟進",
+      "kind": "pos"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      1
+     ],
+     [
+      1,
+      7
+     ]
+    ],
+    "sentence_scores": [
+     0,
+     0.5
+    ],
+    "impacts": []
+   }
+  },
+  {
+   "id": "sector-skip-direct",
+   "title": "",
+   "body": "AI伺服器需求強勁，鴻海受惠。",
+   "custom": {},
+   "result": {
+    "total": 3.5,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "需求強勁",
+      "w": 2,
+      "note": ""
+     },
+     {
+      "term": "受惠",
+      "w": 1.5,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 1,
+      "end": 6,
+      "term": "AI伺服器",
+      "kind": "sector"
+     },
+     {
+      "start": 6,
+      "end": 10,
+      "term": "需求強勁",
+      "kind": "pos"
+     },
+     {
+      "start": 11,
+      "end": 13,
+      "term": "鴻海",
+      "kind": "stock"
+     },
+     {
+      "start": 13,
+      "end": 15,
+      "term": "受惠",
+      "kind": "pos"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      1
+     ],
+     [
+      1,
+      16
+     ]
+    ],
+    "sentence_scores": [
+     0,
+     3.5
+    ],
+    "impacts": [
+     {
+      "code": "2317",
+      "type": "direct",
+      "sector": null,
+      "score": 3.5,
+      "key_sentence": 1,
+      "reason": "新聞直接提及，偏多。關鍵句：「AI伺服器需求強勁，鴻海受惠。」"
+     },
+     {
+      "code": "2382",
+      "type": "sector",
+      "sector": "AI伺服器",
+      "score": 1.75,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「AI伺服器」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "3231",
+      "type": "sector",
+      "sector": "AI伺服器",
+      "score": 1.75,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「AI伺服器」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "6669",
+      "type": "sector",
+      "sector": "AI伺服器",
+      "score": 1.75,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「AI伺服器」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "2356",
+      "type": "sector",
+      "sector": "AI伺服器",
+      "score": 1.75,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「AI伺服器」族群，產業連動偏多（取一半分數）"
+     }
+    ]
+   }
+  },
+  {
+   "id": "multi-sector",
+   "title": "",
+   "body": "運價上漲。面板報價下跌。SCFI 創新高。",
+   "custom": {},
+   "result": {
+    "total": 0.5,
+    "label": "neu",
+    "hits": [
+     {
+      "term": "報價下跌",
+      "w": -2,
+      "note": ""
+     },
+     {
+      "term": "創新高",
+      "w": 2.5,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 1,
+      "end": 3,
+      "term": "運價",
+      "kind": "sector"
+     },
+     {
+      "start": 6,
+      "end": 8,
+      "term": "面板",
+      "kind": "sector"
+     },
+     {
+      "start": 8,
+      "end": 12,
+      "term": "報價下跌",
+      "kind": "neg"
+     },
+     {
+      "start": 13,
+      "end": 17,
+      "term": "SCFI",
+      "kind": "sector"
+     },
+     {
+      "start": 18,
+      "end": 21,
+      "term": "創新高",
+      "kind": "pos"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      1
+     ],
+     [
+      1,
+      6
+     ],
+     [
+      6,
+      13
+     ],
+     [
+      13,
+      22
+     ]
+    ],
+    "sentence_scores": [
+     0,
+     0,
+     -2,
+     2.5
+    ],
+    "impacts": [
+     {
+      "code": "2603",
+      "type": "sector",
+      "sector": "航運",
+      "score": 1.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「航運」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "2609",
+      "type": "sector",
+      "sector": "航運",
+      "score": 1.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「航運」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "2615",
+      "type": "sector",
+      "sector": "航運",
+      "score": 1.25,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「航運」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "3034",
+      "type": "sector",
+      "sector": "面板",
+      "score": -1,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「面板」族群，產業連動偏空（取一半分數）"
+     },
+     {
+      "code": "2409",
+      "type": "sector",
+      "sector": "面板",
+      "score": -1,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「面板」族群，產業連動偏空（取一半分數）"
+     },
+     {
+      "code": "3481",
+      "type": "sector",
+      "sector": "面板",
+      "score": -1,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「面板」族群，產業連動偏空（取一半分數）"
+     }
+    ]
+   }
+  },
+  {
+   "id": "empty",
+   "title": "",
+   "body": "",
+   "custom": {},
+   "result": {
+    "total": 0,
+    "label": "neu",
+    "hits": [],
+    "matches": [],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      1
+     ]
+    ],
+    "sentence_scores": [
+     0
+    ],
+    "impacts": []
+   }
+  },
+  {
+   "id": "no-match",
+   "title": "今天天氣晴",
+   "body": "這是一則與股市無關的新聞。",
+   "custom": {},
+   "result": {
+    "total": 0,
+    "label": "neu",
+    "hits": [],
+    "matches": [],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      6
+     ],
+     [
+      6,
+      19
+     ]
+    ],
+    "sentence_scores": [
+     0,
+     0
+    ],
+    "impacts": []
+   }
+  },
+  {
+   "id": "punctuation",
+   "title": "營收創新高！",
+   "body": "毛利率下修？不過訂單滿載；EPS 上修\n明年樂觀",
+   "custom": {},
+   "result": {
+    "total": 2.75,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "創新高",
+      "w": 3.75,
+      "note": ""
+     },
+     {
+      "term": "下修",
+      "w": -2,
+      "note": ""
+     },
+     {
+      "term": "訂單滿載",
+      "w": -2.5,
+      "note": "否定"
+     },
+     {
+      "term": "上修",
+      "w": 2,
+      "note": ""
+     },
+     {
+      "term": "樂觀",
+      "w": 1.5,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 2,
+      "end": 5,
+      "term": "創新高",
+      "kind": "pos"
+     },
+     {
+      "start": 10,
+      "end": 12,
+      "term": "下修",
+      "kind": "neg"
+     },
+     {
+      "start": 15,
+      "end": 19,
+      "term": "訂單滿載",
+      "kind": "pos"
+     },
+     {
+      "start": 24,
+      "end": 26,
+      "term": "上修",
+      "kind": "pos"
+     },
+     {
+      "start": 29,
+      "end": 31,
+      "term": "樂觀",
+      "kind": "pos"
+     }
+    ],
+    "negators": [
+     {
+      "start": 13,
+      "end": 14
+     }
+    ],
+    "sentences": [
+     [
+      0,
+      6
+     ],
+     [
+      6,
+      7
+     ],
+     [
+      7,
+      13
+     ],
+     [
+      13,
+      20
+     ],
+     [
+      20,
+      27
+     ],
+     [
+      27,
+      31
+     ]
+    ],
+    "sentence_scores": [
+     3.75,
+     0,
+     -2,
+     -2.5,
+     2,
+     1.5
+    ],
+    "impacts": []
+   }
+  },
+  {
+   "id": "alias",
+   "title": "台積先進封裝",
+   "body": "中華航空與虎航獲利成長。臻鼎接單。",
+   "custom": {},
+   "result": {
+    "total": 3,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "獲利成長",
+      "w": 2,
+      "note": ""
+     },
+     {
+      "term": "接單",
+      "w": 1,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 0,
+      "end": 2,
+      "term": "台積",
+      "kind": "stock"
+     },
+     {
+      "start": 2,
+      "end": 6,
+      "term": "先進封裝",
+      "kind": "sector"
+     },
+     {
+      "start": 7,
+      "end": 11,
+      "term": "中華航空",
+      "kind": "stock"
+     },
+     {
+      "start": 12,
+      "end": 14,
+      "term": "虎航",
+      "kind": "stock"
+     },
+     {
+      "start": 14,
+      "end": 18,
+      "term": "獲利成長",
+      "kind": "pos"
+     },
+     {
+      "start": 19,
+      "end": 21,
+      "term": "臻鼎",
+      "kind": "stock"
+     },
+     {
+      "start": 21,
+      "end": 23,
+      "term": "接單",
+      "kind": "pos"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      7
+     ],
+     [
+      7,
+      19
+     ],
+     [
+      19,
+      24
+     ]
+    ],
+    "sentence_scores": [
+     0,
+     2,
+     1
+    ],
+    "impacts": [
+     {
+      "code": "2610",
+      "type": "direct",
+      "sector": null,
+      "score": 2,
+      "key_sentence": 1,
+      "reason": "新聞直接提及，偏多。關鍵句：「中華航空與虎航獲利成長。」"
+     },
+     {
+      "code": "6757",
+      "type": "direct",
+      "sector": null,
+      "score": 2,
+      "key_sentence": 1,
+      "reason": "新聞直接提及，偏多。關鍵句：「中華航空與虎航獲利成長。」"
+     },
+     {
+      "code": "2330",
+      "type": "direct",
+      "sector": null,
+      "score": 1.5,
+      "key_sentence": 0,
+      "reason": "新聞直接提及，偏多。關鍵句：「台積先進封裝」"
+     },
+     {
+      "code": "3711",
+      "type": "sector",
+      "sector": "先進封裝",
+      "score": 1.5,
+      "key_sentence": null,
+      "reason": "未直接提及，屬「先進封裝」族群，產業連動偏多（取一半分數）"
+     },
+     {
+      "code": "4958",
+      "type": "direct",
+      "sector": null,
+      "score": 1,
+      "key_sentence": 2,
+      "reason": "新聞直接提及，偏多。關鍵句：「臻鼎接單。」"
+     }
+    ]
+   }
+  },
+  {
+   "id": "custom-1",
+   "title": "漲價效應發酵",
+   "body": "利空出盡，董事會通過配息。",
+   "custom": {
+    "漲價效應": 1.5,
+    "利空": -3,
+    "董事會": 1
+   },
+   "result": {
+    "total": 1.25,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "漲價效應",
+      "w": 2.25,
+      "note": ""
+     },
+     {
+      "term": "利空",
+      "w": -3,
+      "note": ""
+     },
+     {
+      "term": "董事會",
+      "w": 1,
+      "note": ""
+     },
+     {
+      "term": "配息",
+      "w": 1,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 0,
+      "end": 4,
+      "term": "漲價效應",
+      "kind": "pos"
+     },
+     {
+      "start": 7,
+      "end": 9,
+      "term": "利空",
+      "kind": "neg"
+     },
+     {
+      "start": 12,
+      "end": 15,
+      "term": "董事會",
+      "kind": "pos"
+     },
+     {
+      "start": 17,
+      "end": 19,
+      "term": "配息",
+      "kind": "pos"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      7
+     ],
+     [
+      7,
+      20
+     ]
+    ],
+    "sentence_scores": [
+     2.25,
+     -1
+    ],
+    "impacts": []
+   }
+  },
+  {
+   "id": "direct-no-sentiment",
+   "title": "台積電營收成長",
+   "body": "聯電今日召開董事會。",
+   "custom": {
+    "漲價效應": 1.5,
+    "利空": -3,
+    "董事會": 1
+   },
+   "result": {
+    "total": 4,
+    "label": "pos",
+    "hits": [
+     {
+      "term": "營收成長",
+      "w": 3,
+      "note": ""
+     },
+     {
+      "term": "董事會",
+      "w": 1,
+      "note": ""
+     }
+    ],
+    "matches": [
+     {
+      "start": 0,
+      "end": 3,
+      "term": "台積電",
+      "kind": "stock"
+     },
+     {
+      "start": 3,
+      "end": 7,
+      "term": "營收成長",
+      "kind": "pos"
+     },
+     {
+      "start": 8,
+      "end": 10,
+      "term": "聯電",
+      "kind": "stock"
+     },
+     {
+      "start": 14,
+      "end": 17,
+      "term": "董事會",
+      "kind": "pos"
+     }
+    ],
+    "negators": [],
+    "sentences": [
+     [
+      0,
+      8
+     ],
+     [
+      8,
+      18
+     ]
+    ],
+    "sentence_scores": [
+     3,
+     1
+    ],
+    "impacts": [
+     {
+      "code": "2330",
+      "type": "direct",
+      "sector": null,
+      "score": 3,
+      "key_sentence": 0,
+      "reason": "新聞直接提及，偏多。關鍵句：「台積電營收成長」"
+     },
+     {
+      "code": "2303",
+      "type": "direct",
+      "sector": null,
+      "score": 1,
+      "key_sentence": 1,
+      "reason": "新聞直接提及，偏多。關鍵句：「聯電今日召開董事會。」"
+     }
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+
+# 本機資料庫（每個人自己執行載入程式產生）
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm
+
+# 編輯器
+.vscode/
+.idea/
+
+# 排程紀錄與鎖檔
+data/logs/
+data/jobs.lock

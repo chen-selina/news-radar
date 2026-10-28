@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /api/
+Disallow: /client/token
+Disallow: /payment/
+Disallow: /search

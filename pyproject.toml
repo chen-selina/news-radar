@@ -1,0 +1,9 @@
+[project]
+name = "tw-news-radar"
+version = "0.1.0"
+description = "台股新聞雷達：爬取新聞、詞典分析利多利空、事後用股價驗證"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
