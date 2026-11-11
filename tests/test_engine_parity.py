@@ -45,10 +45,11 @@ def test_matches_prototype(case):
     assert [v.reason for v in a.impacts] == [html.unescape(v["reason"]) for v in exp["impacts"]]
 
 
-def test_config_lexicon_equals_prototype():
-    """config/lexicon.json 的初版必須和原型的 BASE_LEX、SECTOR_KW 完全一樣（含順序）。"""
+def test_config_lexicon_keeps_prototype_terms():
+    """config/lexicon.json 從原型的 BASE_LEX、SECTOR_KW 出發：原型的詞都還在（分數可以調整、可以新增），
+    產業關鍵字完全相同。與原型逐項比對用的是 golden.json 裡的原型詞典，不受這個檔影響。"""
     lex = load_file()
-    assert list(lex.sentiment.items()) == list(BASE.sentiment.items())
+    assert list(lex.sentiment)[:len(BASE.sentiment)] == list(BASE.sentiment)
     assert list(lex.sectors.items()) == list(BASE.sectors.items())
 
 

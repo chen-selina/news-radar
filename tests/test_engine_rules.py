@@ -96,10 +96,68 @@ def test_bad_sector_fallback_rejected():
         Analyzer(SECTOR_LEX, PHONE, sector_fallback="all")
 
 
-def test_production_analyzer_turns_on_both_fixes():
+def test_production_analyzer_turns_on_all_fixes():
     from radar.analysis.engine import production_analyzer
     an = production_analyzer(SECTOR_LEX, PHONE)
     assert an.sector_fallback == "title" and an.name_rules is not None
+    assert (an.repeat_decay, an.direct_scope, an.direct_fallback) == (0.5, "segment", "title")
+
+
+# ---- 2026-11-10 加入的三項修正（預設關閉，行為與原型相同） ----
+FLOW_LEX = Lexicon({"買超": 1, "賣超": -1, "跌停": -1.5, "下跌": -1, "漲停": 1.5, "年增": 1, "新高": 1.5}, {})
+FLOW = [Stock("3481", "群創"), Stock("2303", "聯電"), Stock("1802", "台玻"), Stock("2610", "華航"),
+        Stock("5269", "祥碩"), Stock("6446", "藥華藥"), Stock("2383", "台光電"), Stock("2345", "智邦")]
+SEG = Analyzer(FLOW_LEX, FLOW, direct_scope="segment", direct_fallback="title")
+
+
+def scores(a):
+    return {v.stock.name: v.score for v in a.impacts}
+
+
+def test_repeat_decay_halves_each_repeat():
+    body = "買超。買超。買超。"
+    assert Analyzer(FLOW_LEX, []).analyze("", body).total == 3           # 原型：出現幾次加幾次
+    a = Analyzer(FLOW_LEX, [], repeat_decay=0.5).analyze("", body)
+    assert a.total == 1.75 and [h.w for h in a.hits] == [1, 0.5, 0.25]   # 1 + 0.5 + 0.25
+
+
+def test_repeat_decay_counts_biggest_first_and_per_term():
+    a = Analyzer(FLOW_LEX, [], repeat_decay=0.5).analyze("買超", "買超。賣超。")
+    assert [h.w for h in a.hits] == [1.5, 0.5, -1]   # 標題的 1.5 先算；賣超是另一個詞，不受影響
+
+
+def test_prototype_gives_whole_sentence_to_every_company():
+    a = Analyzer(FLOW_LEX, FLOW).analyze("", "群創遭賣超1.9萬張，台玻獲買超8.3萬張。")
+    assert scores(a) == {"群創": 0, "台玻": 0}   # 買超與賣超互相抵銷，再退回總分的一半（也是 0）
+
+
+def test_segment_gives_each_company_its_own_clause():
+    a = SEG.analyze("", "群創遭賣超1.9萬張，聯電遭賣超1.4萬張，台玻、華航分別獲買超8.3萬張及5.8萬張。")
+    assert scores(a) == {"群創": -1, "聯電": -1, "台玻": 1, "華航": 1}
+    assert "台玻、華航分別獲買超" in a.impacts[2].reason and "群創" not in a.impacts[2].reason
+
+
+def test_segment_clause_without_company_belongs_to_previous_company():
+    a = SEG.analyze("", "台光電營收244億元，年增突破200%，智邦營收也同創新高。")
+    assert scores(a) == {"台光電": 1, "智邦": 1.5}
+
+
+def test_segment_keeps_whole_sentence_for_single_company():
+    a = SEG.analyze("", "祥碩開盤走弱，午盤後跌停，終場下跌一成。")
+    assert scores(a) == {"祥碩": -2.5}
+
+
+def test_direct_fallback_title_only():
+    body = "漲幅前5名個股為祥碩、藥華藥。大盤下跌。"
+    assert scores(Analyzer(FLOW_LEX, FLOW).analyze("", body)) == {"祥碩": -0.5, "藥華藥": -0.5}   # 原型：總分的一半
+    assert scores(SEG.analyze("", body)) == {"祥碩": 0, "藥華藥": 0}                                # 只是被提到，不給方向
+    assert scores(SEG.analyze("祥碩董事會", "大盤下跌。")) == {"祥碩": -0.5}                        # 標題主角仍取一半
+
+
+@pytest.mark.parametrize("kw", [{"repeat_decay": 0}, {"repeat_decay": 1.5}, {"direct_scope": "x"}, {"direct_fallback": "x"}])
+def test_bad_options_rejected(kw):
+    with pytest.raises(ValueError):
+        Analyzer(FLOW_LEX, FLOW, **kw)
 
 
 def test_label_and_strength_thresholds():

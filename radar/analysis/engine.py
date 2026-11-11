@@ -24,6 +24,7 @@ BOOSTERS = ("大幅", "強勁", "明顯", "顯著", "持續")
 NEG_WINDOW, BOOST_WINDOW = 5, 4
 NEG_STOP = ("，", "。", "、", "；", "\n")  # 否定詞的範圍遇到這些標點就截斷
 SENTENCE_END = "。！？；\n"
+CLAUSE_END = "，；："     # 子句的分隔（只用全形：半形逗號、冒號常出現在數字與時間裡）
 TITLE_WEIGHT = BOOST_WEIGHT = 1.5
 SECTOR_SHARE = 0.5   # 產業連動取一半分數
 SECTOR_MIN = 0.5     # 產業連動分數絕對值低於此值就不列出
@@ -66,6 +67,7 @@ class Impact:
     score: float = 0.0
     sector: str | None = None
     key_sentence: int | None = None
+    key_span: tuple[int, int] | None = None  # 關鍵句在全文的位置（分段歸屬時可能只是句子的一部分）
     reason: str = ""
     sentences: list[int] = field(default_factory=list, repr=False)
 
@@ -131,13 +133,31 @@ class Analyzer:
     - name_rules（radar/analysis/names.py）：公司短名稱的排除規則。
     - sector_fallback：產業關鍵字所在句子沒有情緒時怎麼辦。"total"＝原型做法，改用整則新聞總分；
       "title"＝只有關鍵字出現在標題時才用整則總分，內文隨口提到的（「拿起手機拍下來」）不連動。
-    正式流程用 production_analyzer() 建立，兩項修正都會開啟。
+    - repeat_decay：同一個詞重複出現時的遞減比例。1＝原型做法，出現幾次就加幾次；
+      0.5＝第 2 次算一半、第 3 次算四分之一…（先算分數絕對值大的），同一個詞最多貢獻不到 2 倍。
+      整則總分、每檔個股、每個族群各自套用。
+    - direct_scope：直接提及的公司取哪個範圍的情緒。"sentence"＝原型做法，整句；
+      "segment"＝一句提到多家公司時，依逗號切開，每家公司只拿自己那一段
+      （「群創遭賣超，台玻獲買超」不會互相抵銷）。沒提到公司的子句歸給前一家公司。
+    - direct_fallback：提到公司的地方沒有情緒詞時怎麼辦。"total"＝原型做法，取整則總分的一半；
+      "title"＝只有公司出現在標題時才這樣做，否則 0 分（列為中性，不計入命中率）。
+    正式流程用 production_analyzer() 建立，所有修正都會開啟。
     """
 
     def __init__(self, lexicon: Lexicon, stocks: list[Stock], name_rules: NameRules | None = None,
-                 sector_fallback: str = "total"):
+                 sector_fallback: str = "total", repeat_decay: float = 1.0,
+                 direct_scope: str = "sentence", direct_fallback: str = "total"):
         if sector_fallback not in ("total", "title"):
             raise ValueError("sector_fallback 只能是 total 或 title")
+        if direct_scope not in ("sentence", "segment"):
+            raise ValueError("direct_scope 只能是 sentence 或 segment")
+        if direct_fallback not in ("total", "title"):
+            raise ValueError("direct_fallback 只能是 total 或 title")
+        if not 0 < repeat_decay <= 1:
+            raise ValueError("repeat_decay 必須大於 0、不超過 1")
+        self.repeat_decay = repeat_decay
+        self.direct_scope = direct_scope
+        self.direct_fallback = direct_fallback
         self.lexicon = lexicon
         self.stocks = list(stocks)
         self.name_rules = name_rules
@@ -171,6 +191,38 @@ class Analyzer:
             if not any(f.start < k.end and k.start < f.end for k in keep):
                 keep.append(f)
         return sorted(keep, key=lambda m: m.start)
+
+    def _decayed(self, ms: list[Match]) -> list[float]:
+        """每個情緒詞實際貢獻的分數：同一個詞重複出現時，由分數絕對值大的開始依序遞減。"""
+        out = [m.effective for m in ms]
+        if self.repeat_decay >= 1:
+            return out
+        by_term: dict[str, list[int]] = {}
+        for i, m in enumerate(ms):
+            by_term.setdefault(m.term, []).append(i)
+        for idx in by_term.values():
+            for rank, i in enumerate(sorted(idx, key=lambda i: -abs(out[i]))):
+                out[i] *= self.repeat_decay ** rank
+        return out
+
+    def _score(self, sent_ms: list[Match], spans: list[tuple[int, int]]) -> float:
+        """落在這些範圍裡的情緒詞分數加總（套用重複遞減）。"""
+        return sum(self._decayed([m for m in sent_ms if any(a <= m.start < b for a, b in spans)]))
+
+    @staticmethod
+    def _segments(text: str, sents: list[tuple[int, int]], ms: list[Match]) -> list[tuple[int, int]]:
+        """提到兩家以上公司的句子，依子句切成數段，每段從「提到公司的子句」開始；其餘句子維持整句。"""
+        stock_pos = [m.start for m in ms if m.kind == "stock"]
+        out: list[tuple[int, int]] = []
+        for a, b in sents:
+            starts = [a] + [i + 1 for i in range(a, b - 1) if text[i] in CLAUSE_END]
+            anchors = [s for s, e in zip(starts, starts[1:] + [b]) if any(s <= p < e for p in stock_pos)]
+            if len(anchors) <= 1:
+                out.append((a, b))
+                continue
+            cuts = [a] + anchors[1:] + [b]
+            out += list(zip(cuts, cuts[1:]))
+        return out
 
     def analyze(self, title: str, body: str) -> Analysis:
         text = title + "\n" + body
@@ -211,23 +263,38 @@ class Analyzer:
                 s_score[si] += w
             hits.append(Hit(m.term, w, note))
 
+        sent_ms = [m for m in ms if m.kind in ("pos", "neg")]
+        if self.repeat_decay < 1:  # 整則總分與命中詞的分數改用遞減後的數字；句子分數維持原樣
+            contrib = self._decayed(sent_ms)
+            total = sum(contrib)
+            for h, w in zip(hits, contrib):
+                h.w = w
+
         # 直接提及：依第一次出現的順序
+        units = sents if self.direct_scope == "sentence" else self._segments(text, sents, ms)
+
+        def u_idx(pos: int) -> int:
+            return next((i for i, (a, b) in enumerate(units) if a <= pos < b), -1)
+
         imp: dict[str, Impact] = {}
+        in_title: set[str] = set()
         for m in ms:
             if m.kind != "stock":
                 continue
             cur = imp.setdefault(m.stock.code, Impact(m.stock, "direct"))
-            si = s_idx(m.start)
-            if si not in cur.sentences:
-                cur.sentences.append(si)
+            ui = u_idx(m.start)
+            if ui not in cur.sentences:
+                cur.sentences.append(ui)
+            if m.start < len(title):
+                in_title.add(m.stock.code)
         for v in imp.values():
-            sc = 0.0
-            for si in v.sentences:
-                sc += s_score[si]
+            sc = self._score(sent_ms, [units[i] for i in v.sentences])
             if abs(sc) < 0.01:
-                sc = total * 0.5
+                sc = total * 0.5 if self.direct_fallback == "total" or v.stock.code in in_title else 0.0
             v.score = sc
-            v.key_sentence = sorted(v.sentences, key=lambda si: -abs(s_score[si]))[0]
+            key = sorted(v.sentences, key=lambda i: -abs(self._score(sent_ms, [units[i]])))[0]
+            v.key_span = units[key]
+            v.key_sentence = s_idx(units[key][0])
 
         # 產業連動
         sec_hits: dict[str, list[int]] = {}
@@ -241,9 +308,7 @@ class Analyzer:
                 if m.start < len(title):
                     sec_in_title.add(m.sector)
         for sec, lst in sec_hits.items():
-            sc = 0.0
-            for si in lst:
-                sc += s_score[si]
+            sc = self._score(sent_ms, [sents[si] for si in lst])
             if abs(sc) < 0.01:
                 # 關鍵字所在句子沒有情緒：原型改用整則總分；sector_fallback="title" 時只有標題提到才這樣做
                 sc = total if self.sector_fallback == "total" or sec in sec_in_title else 0.0
@@ -262,7 +327,7 @@ class Analyzer:
 
 def _reason(v: Impact, text: str, sents: list[tuple[int, int]]) -> str:
     if v.type == "direct":
-        s, e = sents[v.key_sentence] if 0 <= v.key_sentence < len(sents) else (0, 0)
+        s, e = v.key_span or (0, 0)
         sent = text[s:e].replace("\n", "").strip()
         if len(sent) > 60:
             sent = sent[:60] + "…"
@@ -272,4 +337,5 @@ def _reason(v: Impact, text: str, sents: list[tuple[int, int]]) -> str:
 
 def production_analyzer(lexicon: Lexicon, stocks: list[Stock]) -> Analyzer:
     """正式流程（爬蟲建立預測、命令列分析）用的分析器：開啟所有原型之後加入的修正。"""
-    return Analyzer(lexicon, stocks, NameRules.load(), sector_fallback="title")
+    return Analyzer(lexicon, stocks, NameRules.load(), sector_fallback="title",
+                    repeat_decay=0.5, direct_scope="segment", direct_fallback="title")
