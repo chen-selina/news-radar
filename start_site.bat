@@ -6,6 +6,8 @@ setlocal
 cd /d "%~dp0"
 chcp 65001 >nul
 set PYTHONIOENCODING=utf-8
+rem UTF-8 mode: Python and pip read text files as UTF-8 instead of the Windows code page (cp950)
+set PYTHONUTF8=1
 set "PY=.venv\Scripts\python.exe"
 
 curl -s -o nul http://127.0.0.1:8000/api/meta >nul 2>&1

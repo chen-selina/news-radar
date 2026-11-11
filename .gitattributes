@@ -1,0 +1,3 @@
+# Windows batch files must keep CRLF line endings, also in the ZIP that GitHub generates.
+# With LF endings cmd.exe can fail to find goto labels, and the window just closes.
+*.bat text eol=crlf

@@ -91,3 +91,31 @@ def test_main_writes_log(tmp_path, monkeypatch):
     assert jobs.main(["--db", str(tmp_path / "r.db")]) == 0
     text = next((tmp_path / "logs").glob("jobs-*.log")).read_text(encoding="utf-8")
     assert "爬取新聞" in text and "結束（成功）" in text
+
+
+def test_lock_left_by_dead_process_is_ignored_at_once(tmp_path):
+    """爬到一半關掉視窗：鎖檔還在，但建立它的程序已經不在了，不用等 2 小時。"""
+    import subprocess
+    import sys
+    p = subprocess.Popen([sys.executable, "-c", "pass"])
+    p.wait()
+    path = tmp_path / "jobs.lock"
+    path.write_text(str(p.pid))
+    assert jobs.locked(path) is False
+    with jobs.Lock(path):  # 可以直接取得
+        assert jobs.locked(path) is True  # 現在是這個（活著的）測試程序持有
+    assert not path.exists()
+
+
+def test_lock_held_by_live_process_blocks(tmp_path):
+    import os
+    path = tmp_path / "jobs.lock"
+    path.write_text(str(os.getpid()))
+    assert jobs.locked(path) is True
+    with pytest.raises(jobs.Busy):
+        with jobs.Lock(path):
+            pass
+
+
+def test_no_lock_file_means_not_locked(tmp_path):
+    assert jobs.locked(tmp_path / "jobs.lock") is False

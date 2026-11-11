@@ -35,7 +35,8 @@ def client(tmp_path, monkeypatch):
     c.commit()
     c.close()
     monkeypatch.setattr(single, "resolve", lambda host: ["93.184.216.34"])
-    return TestClient(create_app(path, lexfile))
+    # 鎖檔也用測試自己的：不受這台電腦上正在執行（或中斷留下）的排程影響
+    return TestClient(create_app(path, lexfile, tmp_path / "jobs.lock"))
 
 
 def fake_get(status=200, text=ARTICLE, ctype="text/html; charset=utf-8", exc=None):

@@ -358,10 +358,7 @@ def create_app(db_path: Path | str | None = None, lexicon_path: Path = lexicon.L
 
     def crawling() -> bool:
         """排程或另一次爬取是否正在執行（鎖檔存在且不是異常中斷留下的舊檔）。"""
-        try:
-            return time.time() - lock_path.stat().st_mtime <= jobs.STALE_LOCK_SECONDS
-        except OSError:
-            return False
+        return jobs.locked(lock_path)
 
     @app.get("/api/crawl/check", summary="各來源有幾則還沒收錄的新聞（只讀列表，不存檔）")
     def crawl_check(conn: sqlite3.Connection = Conn):

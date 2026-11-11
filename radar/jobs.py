@@ -33,13 +33,53 @@ class Busy(Exception):
     """上一次排程還在執行。"""
 
 
+def _pid_alive(pid: int) -> bool:
+    """這個程序是否還在執行。無法判斷時回傳 True（寧可多等，不要兩個同時跑）。"""
+    if pid <= 0:
+        return False
+    if os.name == "nt":  # Windows 的 os.kill(pid, 0) 會真的把程序結束掉，不能用
+        import ctypes
+        k32 = ctypes.windll.kernel32
+        handle = k32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+        if not handle:
+            return ctypes.GetLastError() == 5         # 5＝拒絕存取：程序存在，只是不能查
+        try:
+            code = ctypes.c_ulong()
+            return bool(k32.GetExitCodeProcess(handle, ctypes.byref(code))) and code.value == 259  # STILL_ACTIVE
+        finally:
+            k32.CloseHandle(handle)
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except OSError:
+        return True
+    return True
+
+
+def locked(path: Path = LOCK_PATH) -> bool:
+    """排程或另一次爬取是否正在執行。
+
+    鎖檔裡記著建立它的程序編號：那個程序已經不在了（例如爬到一半關掉視窗、電腦重開），
+    或鎖檔超過 2 小時，都視為上次異常中斷留下的，不算正在執行。
+    """
+    try:
+        age = time.time() - path.stat().st_mtime
+        text = path.read_text(encoding="ascii", errors="ignore").strip()
+    except OSError:
+        return False
+    if age > STALE_LOCK_SECONDS:
+        return False
+    return _pid_alive(int(text)) if text.isdigit() else True
+
+
 class Lock:
     def __init__(self, path: Path = LOCK_PATH):
         self.path = path
 
     def __enter__(self):
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        if self.path.exists() and time.time() - self.path.stat().st_mtime > STALE_LOCK_SECONDS:
+        if self.path.exists() and not locked(self.path):
             self.path.unlink(missing_ok=True)
         try:
             fd = os.open(self.path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)

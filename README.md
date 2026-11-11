@@ -19,7 +19,10 @@
 只想把網站打開的隊友，做這兩步就好：
 
 1. 安裝 [Python](https://www.python.org/downloads/) 3.11 以上，安裝時勾選「Add python.exe to PATH」。
-2. 點兩下 `start_site.bat`。
+   （Microsoft Store 版或沒勾 PATH 的話，啟動檔會找不到 Python。）
+2. 從 GitHub 按「Code → Download ZIP」下載後，**先在 ZIP 上按右鍵「解壓縮全部」**，不要在壓縮檔裡面直接點。
+3. 進到解壓縮後的資料夾，點兩下 `start_site.bat`。
+   如果跳出藍色的「Windows 已保護您的電腦」，點「其他資訊」→「仍要執行」（Windows 對網路下載的 `.bat` 都會這樣問）。
 
 第一次會自動安裝需要的套件、下載上市櫃公司清單（需要網路，約幾分鐘），完成後瀏覽器會自己打開。
 之後再點就只要幾秒。失敗時黑色視窗會停住並顯示原因，請截圖給團隊。
@@ -342,7 +345,8 @@ run_jobs.bat
   - 網站上方的「上次排程」顯示最近一次的結果，滑鼠移上去可以看摘要。
   - 「部分完成」代表有某個來源或某天的收盤價沒抓到，細節看 log。
 - **同時只跑一個**：排程執行中會留下 `data/jobs.lock`。這時候再觸發排程會直接略過，
-  網站的「重新爬取新聞」也會回覆「排程正在執行」。程式異常中斷留下的鎖檔，超過 2 小時會自動失效。
+  網站的「重新爬取新聞」也會回覆「排程正在執行」。程式異常中斷留下的鎖檔（例如爬到一半關掉網站視窗）不會卡住：
+  鎖檔記著建立它的程式編號，那個程式已經不在就立刻失效；另外超過 2 小時也會自動失效。
 - 公司清單（新上市、市值）不在排程裡，建議每個月手動重跑一次 `python -m radar.stocks.load`。
 
 ### 其他作業系統
@@ -386,6 +390,9 @@ macOS／Linux 的隊友可以用 cron，例如（`crontab -e`，路徑換成自�
   在網站改詞典會修改 `config/lexicon.json`，記得 commit，隊友 pull 之後下次分析時會自動建立新版本。
 - 改了程式的人請先跑 `python -m pytest`，全部通過再推上去。
 - `.bat` 檔只能用英文（ASCII）並用 Windows 換行（CRLF），否則 cmd 會讀錯。
+- `requirements.txt` 也只能用英文：舊版 pip 會用 Windows 的 Big5（cp950）讀它，裡面有中文註解就會在安裝時失敗
+  （`UnicodeDecodeError: 'cp950' codec can't decode…`，2026-11-11 隊友實際遇到）。
+  兩個 `.bat` 也設了 `PYTHONUTF8=1`，讓 Python 一律用 UTF-8 讀檔。
 
 ### 備份
 
