@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import sqlite3
 import threading
+import time
 from collections.abc import Iterator
 from datetime import date
 from pathlib import Path
@@ -123,6 +124,8 @@ def _lexicon_dict(conn: sqlite3.Connection, lex: lexicon.Lexicon) -> dict:
 
 
 # ---------- 應用程式 ----------
+
+CHECK_TTL_SECONDS = 10 * 60  # 「有沒有新新聞」的檢查結果保留多久，避免太常連到新聞網站
 
 def create_app(db_path: Path | str | None = None, lexicon_path: Path = lexicon.LEXICON_PATH,
                lock_path: Path = jobs.LOCK_PATH) -> FastAPI:
@@ -349,9 +352,32 @@ def create_app(db_path: Path | str | None = None, lexicon_path: Path = lexicon.L
             raise _bad(e.args[0], 404) from None
         return _lexicon_dict(conn, lex)
 
-    # ----- 資料更新（開發用） -----
+    # ----- 資料更新 -----
 
-    @app.post("/api/crawl", summary="手動觸發爬蟲（開發用，會花幾分鐘）")
+    check_cache: dict = {"at": 0.0, "data": None}
+
+    def crawling() -> bool:
+        """排程或另一次爬取是否正在執行（鎖檔存在且不是異常中斷留下的舊檔）。"""
+        try:
+            return time.time() - lock_path.stat().st_mtime <= jobs.STALE_LOCK_SECONDS
+        except OSError:
+            return False
+
+    @app.get("/api/crawl/check", summary="各來源有幾則還沒收錄的新聞（只讀列表，不存檔）")
+    def crawl_check(conn: sqlite3.Connection = Conn):
+        """網站開啟時與之後每隔一段時間呼叫，用來自動爬取或在按鈕上提醒。
+        結果保留 10 分鐘，這段時間內重複呼叫不會再連到新聞網站。"""
+        if crawling():
+            return {"running": True, "new": 0, "sources": {}, "titles": [], "checked_at": None}
+        with cache_lock:
+            data = check_cache["data"] if time.time() - check_cache["at"] < CHECK_TTL_SECONDS else None
+        if data is None:
+            data = {**crawl_run.check_new(conn), "checked_at": config.now_iso()}
+            with cache_lock:
+                check_cache.update(at=time.time(), data=data)
+        return {"running": False, **data}
+
+    @app.post("/api/crawl", summary="爬取新聞（會花幾分鐘；同時只能跑一個）")
     def crawl(data: CrawlIn, conn: sqlite3.Connection = Conn):
         bad = [s for s in data.sources or [] if s not in SOURCES]
         if bad:
@@ -361,6 +387,10 @@ def create_app(db_path: Path | str | None = None, lexicon_path: Path = lexicon.L
             with jobs.Lock(lock_path):
                 log: list[str] = []
                 out = crawl_run.run_all(conn, data.sources, data.limit, data.dry_run, log=log.append)
+                if not data.dry_run and not data.sources:  # 剛爬完全部來源：提醒歸零，10 分鐘後再檢查
+                    with cache_lock:
+                        check_cache.update(at=time.time(), data={
+                            "new": 0, "sources": {}, "titles": [], "checked_at": config.now_iso()})
                 return {**out, "log": log}
         except jobs.Busy:
             raise _bad("排程或另一次爬取正在執行，請等它完成", 409) from None

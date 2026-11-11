@@ -110,6 +110,39 @@ def crawl_source(conn: sqlite3.Connection, name: str, limit: int, dedupe_days: i
     return rep
 
 
+def check_new(conn: sqlite3.Connection, names: list[str] | None = None, limit: int | None = None) -> dict:
+    """只讀各來源的列表（每個來源一次請求，不讀文章頁），數出還沒收錄的新聞。網站用它決定要不要提醒爬取。
+
+    判斷方式和 crawl_source 的去重相同：網址已存在，或最近幾天有相同標題，就不算新的。
+    """
+    cfg = load_config()
+    names = names or [n for n, on in cfg["enabled"].items() if on]
+    limit = limit or cfg.get("per_source_limit", 30)
+    seen_titles = store.recent_title_keys(conn, cfg.get("title_dedupe_days", 3))
+    out: dict = {"new": 0, "sources": {}, "titles": []}
+    for name in names:
+        try:
+            items = FETCHERS[name].list_items(limit)
+        except (http.Blocked, RuntimeError) as e:
+            out["sources"][name] = {"new": 0, "error": str(e)}
+            continue
+        n = 0
+        for item in items:
+            if not urls.is_http(item.url):
+                continue
+            key = store.title_key(item.title)
+            if store.url_exists(conn, urls.canonical(item.url)) or (key and key in seen_titles):
+                continue
+            if key:
+                seen_titles.add(key)
+            n += 1
+            if item.title and len(out["titles"]) < 8:
+                out["titles"].append(item.title)
+        out["sources"][name] = {"new": n, "error": None}
+        out["new"] += n
+    return out
+
+
 def run_all(conn: sqlite3.Connection, names: list[str] | None = None, limit: int | None = None,
             dry_run: bool = False, log=print) -> dict:
     """爬取多個來源（預設為 crawl.json 開啟的來源），存檔並鎖定預測。命令列與網站 API 共用。"""

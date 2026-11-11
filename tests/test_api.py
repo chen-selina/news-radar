@@ -263,3 +263,77 @@ def test_crawl_busy_while_scheduled_job_runs(tmp_path):
 
 def test_meta_last_job(client):
     assert client.get("/api/meta").json()["last_job"] is None
+
+
+# ----- 檢查有沒有新新聞（進站自動爬取、按鈕上的提醒） -----
+
+@pytest.fixture
+def fake_source(monkeypatch):
+    """把新聞來源換成假的：列表上有兩則，回傳「列表被讀了幾次」。"""
+    from types import SimpleNamespace
+
+    from radar.crawl import run as crawl_run
+    from radar.crawl.models import ListItem
+    calls = []
+
+    def list_items(limit):
+        calls.append(limit)
+        return [ListItem("https://money.udn.com/money/story/1/100?utm_source=rss", "udn", "台積電營收創新高"),
+                ListItem("https://money.udn.com/money/story/1/200", "udn", "南亞科跌停")]
+
+    monkeypatch.setattr(crawl_run, "FETCHERS", {"udn": SimpleNamespace(list_items=list_items)})
+    monkeypatch.setattr(crawl_run, "load_config",
+                        lambda: {"enabled": {"udn": True}, "per_source_limit": 30, "title_dedupe_days": 3})
+    return calls
+
+
+def test_crawl_check_counts_news_not_saved_yet(client, fake_source):
+    client.post("/api/news", json={"url": "https://money.udn.com/money/story/1/100", "title": "台積電營收創新高"})
+    d = client.get("/api/crawl/check").json()
+    assert d["new"] == 1 and d["titles"] == ["南亞科跌停"] and d["running"] is False
+    assert d["sources"] == {"udn": {"new": 1, "error": None}}
+    assert client.get("/api/news").json()["total"] == 1  # 只是檢查，沒有存檔
+
+
+def test_crawl_check_same_title_from_another_site_is_not_new(client, fake_source):
+    client.post("/api/news", json={"url": "https://example.com/a", "title": "南亞科 跌停！"})
+    assert client.get("/api/crawl/check").json()["titles"] == ["台積電營收創新高"]
+
+
+def test_crawl_check_is_cached(client, fake_source):
+    client.get("/api/crawl/check")
+    client.get("/api/crawl/check")
+    assert len(fake_source) == 1  # 10 分鐘內第二次不再連到新聞網站
+
+
+def test_crawl_check_reports_source_error(client, fake_source, monkeypatch):
+    from types import SimpleNamespace
+
+    from radar.crawl import run as crawl_run
+
+    def boom(limit):
+        raise RuntimeError("連不上")
+    monkeypatch.setattr(crawl_run, "FETCHERS", {"udn": SimpleNamespace(list_items=boom)})
+    d = client.get("/api/crawl/check").json()
+    assert d["new"] == 0 and d["sources"]["udn"]["error"] == "連不上"
+
+
+def test_crawl_check_while_job_running_does_not_touch_sources(tmp_path, fake_source):
+    from radar import jobs
+    lexfile = tmp_path / "lexicon.json"
+    shutil.copy(lexicon.LEXICON_PATH, lexfile)
+    lock = tmp_path / "jobs.lock"
+    c = TestClient(create_app(tmp_path / "r.db", lexfile, lock))
+    with jobs.Lock(lock):
+        d = c.get("/api/crawl/check").json()
+    assert d["running"] is True and d["new"] == 0 and fake_source == []
+
+
+def test_crawl_resets_the_reminder(client, fake_source, monkeypatch):
+    from radar.crawl import run as crawl_run
+    assert client.get("/api/crawl/check").json()["new"] == 2
+    monkeypatch.setattr(crawl_run, "run_all", lambda *a, **k: {"sources": {}, "saved": 2, "backlog": 0,
+                                                             "lexicon_version": 1, "notes": []})
+    assert client.post("/api/crawl", json={}).status_code == 200
+    assert client.get("/api/crawl/check").json()["new"] == 0
+    assert len(fake_source) == 1  # 剛爬完，不用再檢查一次

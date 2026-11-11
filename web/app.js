@@ -164,13 +164,42 @@ document.querySelectorAll(".toolbar .chip").forEach(b => b.onclick = () => {
   loadFeed();
 });
 
-// ---------- 重新爬取（開發用） ----------
-$("crawl").onclick = async () => {
+// ---------- 爬取新聞：進站自動爬、之後有新新聞就在按鈕上提醒 ----------
+const CHECK_EVERY_MS = 10 * 60 * 1000;
+
+// 按鈕右上角的紅色數字與旁邊的文字。d 是 GET /api/crawl/check 的結果
+function showNew(d) {
+  const badge = $("crawlBadge"), hint = $("crawlHint"), n = d.new || 0;
+  badge.hidden = !n; badge.textContent = n > 99 ? "99+" : n;
+  hint.hidden = !(n || d.running);
+  hint.className = "hint" + (n ? "" : " quiet");
+  hint.textContent = n ? `有 ${n} 則新新聞，按右邊爬取 →` : d.running ? "排程正在爬取中…" : "";
+  $("crawl").title = n ? "還沒收錄的新聞：\n" + d.titles.map(t => "・" + t).join("\n") + (n > d.titles.length ? `\n…共 ${n} 則` : "")
+    : "立刻爬取一次，約需數分鐘";
+}
+
+// 問後端各來源有沒有還沒收錄的新聞。進站後第一次查到結果時，有新的就直接開始爬；之後只提醒。
+// 分頁在背景時不查，等使用者切回來再查（所以在背景開啟的分頁，會在第一次被看到時自動爬）。
+let autoCrawl = true;
+async function checkNew() {
+  if ($("crawl").disabled || document.hidden) return;
+  try {
+    const d = await api("/api/crawl/check");
+    const auto = autoCrawl;
+    autoCrawl = false;
+    showNew(d);
+    if (auto && d.new > 0 && !d.running) await runCrawl(`發現 ${d.new} 則新新聞，自動爬取中`);
+  } catch (e) { /* 檢查失敗（例如網路暫時不通）不打擾使用者，下次再試 */ }
+}
+
+$("crawl").onclick = () => { autoCrawl = false; runCrawl("爬取中"); };
+async function runCrawl(msg) {
   const btn = $("crawl"), log = $("log");
-  btn.disabled = true; log.hidden = false;
-  log.innerHTML = "<div>爬取中，依來源數量約需 1～5 分鐘，請不要關閉頁面…</div>";
+  btn.disabled = true; log.hidden = false; $("crawlHint").hidden = true;
+  log.innerHTML = `<div>${esc(msg)}，依來源數量約需 1～5 分鐘，請不要關閉頁面…</div>`;
   try {
     const d = await api("/api/crawl", {method: "POST", body: {}});
+    showNew({new: 0});
     log.innerHTML = [...d.notes.map(n => "注意：" + n), ...d.log, `完成，共新收錄 ${d.saved} 則` + (d.backlog ? `，補建 ${d.backlog} 筆預測` : "")]
       .map(s => `<div>${esc(s)}</div>`).join("");
     const before = new Set(feed.items.map(i => i.id));
@@ -181,7 +210,7 @@ $("crawl").onclick = async () => {
   } catch (e) {
     log.innerHTML = `<div class="err">${esc(e.message)}</div>`;
   } finally { btn.disabled = false; }
-};
+}
 
 // ---------- 貼連結分析 ----------
 let tryMeta = {url: "", published_at: null, saved_id: null};
@@ -460,4 +489,7 @@ async function loadMeta() {
   await loadMeta();
   refreshFeed();
   loadLex();
+  checkNew();                                // 進站：有新新聞就自動爬
+  setInterval(checkNew, CHECK_EVERY_MS);     // 之後：只在按鈕上提醒，不自動爬
+  document.addEventListener("visibilitychange", checkNew);
 })();

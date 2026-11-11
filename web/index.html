@@ -17,7 +17,8 @@
     </div>
     <div class="actions">
       <span class="legend"><span><i style="background:var(--up)"></i>利多（紅）</span><span><i style="background:var(--down)"></i>利空（綠）</span><span>台股慣例：紅漲綠跌</span></span>
-      <button class="btn" id="crawl" title="開發用：立刻爬取一次，約需數分鐘">重新爬取新聞</button>
+      <span class="hint" id="crawlHint" hidden></span>
+      <button class="btn" id="crawl" title="立刻爬取一次，約需數分鐘">重新爬取新聞<span class="badge" id="crawlBadge" hidden></span></button>
     </div>
   </header>
   <div class="banner" id="apiErr" hidden></div>
