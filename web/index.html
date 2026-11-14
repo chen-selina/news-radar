@@ -116,6 +116,7 @@
       <label>觀察期間<span class="seg" id="vH"><button data-v="1" aria-pressed="false">隔日</button><button data-v="3" aria-pressed="true">3 日</button><button data-v="5" aria-pressed="false">5 日</button><button data-v="10" aria-pressed="false">10 日</button></span></label>
       <label>比較基準<span class="seg" id="vB"><button data-v="excess" aria-pressed="true">扣除大盤</button><button data-v="raw" aria-pressed="false">個股漲跌</button></span></label>
       <label>個股範圍<span class="seg" id="vS"><button data-v="all" aria-pressed="true">含產業連動</button><button data-v="direct" aria-pressed="false">只看直接提及</button></span></label>
+      <label>計算單位<span class="seg" id="vD"><button data-v="" aria-pressed="true" title="每則新聞的每檔個股各算一筆">每則新聞</button><button data-v="1" aria-pressed="false" title="一檔個股、一個交易日只算一筆；同一事件的多篇報導不重複計算">每檔每日</button></span></label>
       <label for="vThr">「持平」門檻 ±%<input type="number" id="vThr" value="1" min="0" max="10" step="0.5" style="width:90px"></label>
       <button class="btn ghost" id="vRecalc" title="用目前的詞典重新分析所有新聞，另存成重算結果，不改原始預測">用目前詞典重算</button>
     </div>
@@ -132,7 +133,7 @@
         <div class="note">分數越強的預測應該越準；如果「高」沒有比「低」準，代表詞典權重需要調整。</div>
         <div id="vStr"></div>
         <h2 style="margin-top:16px">驗證規則</h2>
-        <p class="note">基準價：新聞在 13:30 收盤前發布，取前一交易日收盤；收盤後發布，取當日收盤。<br>實際方向：第 N 個交易日的報酬（或扣除大盤後的超額報酬）高於門檻為漲、低於負門檻為跌，其餘為持平。<br>命中：預測利多且實際漲，或預測利空且實際跌。中性預測不計入命中率。<br>交易日以證交所公布的開市日為準（颱風、國定假日休市不算）。</p>
+        <p class="note">基準價：新聞在 09:00 開盤前發布，取前一交易日收盤；開盤後發布（盤中與盤後），取當日收盤。<br>實際方向：第 N 個交易日的報酬（或扣除大盤後的超額報酬）高於門檻為漲、低於負門檻為跌，其餘為持平。<br>命中：預測利多且實際漲，或預測利空且實際跌。中性預測不計入命中率。<br>交易日以證交所公布的開市日為準（颱風、國定假日休市不算）。</p>
       </div>
     </div>
     <div class="panel pad" style="margin-top:16px">

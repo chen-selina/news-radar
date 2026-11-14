@@ -316,12 +316,13 @@ def create_app(db_path: Path | str | None = None, lexicon_path: Path = lexicon.L
     def validation(horizon: int = Query(3, ge=1, le=60), benchmark: str = Query("excess", pattern="^(excess|raw)$"),
                    threshold: float = Query(0.01, ge=0, le=0.5), scope: str = Query("all", pattern="^(all|direct)$"),
                    lexicon_version: int | None = Query(None, description="給版本號就驗證該版的重算結果"),
+                   dedupe: bool = Query(False, description="一檔個股、一個交易日只算一筆（同事件的多篇報導不重複計算）"),
                    conn: sqlite3.Connection = Conn):
         if lexicon_version is not None and not conn.execute(
                 "SELECT 1 FROM recalcs WHERE lexicon_version = ? LIMIT 1", (lexicon_version,)).fetchone():
             raise _bad(f"第 {lexicon_version} 版詞典還沒有重算結果，請先執行重算", 404)
         try:
-            return validate(conn, horizon, benchmark, threshold, scope, lexicon_version)
+            return validate(conn, horizon, benchmark, threshold, scope, lexicon_version, dedupe=dedupe)
         except ValueError as e:
             raise _bad(str(e)) from None
 

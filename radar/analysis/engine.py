@@ -70,6 +70,7 @@ class Impact:
     key_span: tuple[int, int] | None = None  # 關鍵句在全文的位置（分段歸屬時可能只是句子的一部分）
     reason: str = ""
     sentences: list[int] = field(default_factory=list, repr=False)
+    terms: dict[str, float] = field(default_factory=dict, repr=False)  # 直接提及：這檔個股的範圍裡，每個情緒詞的分數加總
 
     @property
     def direction(self) -> str:
@@ -288,7 +289,11 @@ class Analyzer:
             if m.start < len(title):
                 in_title.add(m.stock.code)
         for v in imp.values():
-            sc = self._score(sent_ms, [units[i] for i in v.sentences])
+            spans = [units[i] for i in v.sentences]
+            sc = self._score(sent_ms, spans)
+            for m in sent_ms:   # 給權重估計用（radar/train.py）：不套用重複遞減，也不含「沒有情緒詞時改用總分」的補值
+                if any(a <= m.start < b for a, b in spans):
+                    v.terms[m.term] = v.terms.get(m.term, 0.0) + m.effective
             if abs(sc) < 0.01:
                 sc = total * 0.5 if self.direct_fallback == "total" or v.stock.code in in_title else 0.0
             v.score = sc

@@ -15,7 +15,7 @@ from radar.crawl.models import ListItem
 @pytest.fixture
 def lexfile(tmp_path):
     p = tmp_path / "lexicon.json"
-    shutil.copy(lexicon.LEXICON_PATH, p)
+    shutil.copy(lexicon.HANDMADE_PATH, p)
     return p
 
 
@@ -109,7 +109,7 @@ def test_predict_pending_only_new(conn, lexfile):
 
 def test_unversioned_lexicon_refused(conn):
     nid = add_news(conn, "台積電", "")
-    an = Analyzer(lexicon.load_file(), [])
+    an = Analyzer(lexicon.load_file(lexicon.HANDMADE_PATH), [])
     with pytest.raises(ValueError):
         predict.create_prediction(conn, nid, an)
 

@@ -324,7 +324,7 @@ $("nwAdd").onclick = async () => {
 };
 
 // ---------- 預測驗證 ----------
-const val = {h: 3, benchmark: "excess", scope: "all", rowFilt: "all", lex: "", data: null};
+const val = {h: 3, benchmark: "excess", scope: "all", dedupe: "", rowFilt: "all", lex: "", data: null};
 
 function chartSVG(up, down, h) {
   const W = 620, H = 260, L = 48, R = 16, T = 14, B = 34;
@@ -350,6 +350,7 @@ async function loadVal() {
   const seq = ++valSeq;
   const thr = (parseFloat($("vThr").value) || 0) / 100;
   const p = new URLSearchParams({horizon: val.h, benchmark: val.benchmark, threshold: Math.min(0.5, Math.max(0, thr)), scope: val.scope});
+  if (val.dedupe) p.set("dedupe", "true");
   if (val.lex) p.set("lexicon_version", val.lex);
   try {
     const d = await api("/api/validation?" + p);
@@ -372,7 +373,7 @@ function renderVal() {
     tile("利空命中率", fr(s.down_hit_rate), `利空組平均 ${pct(s.down_avg)}`, "down") +
     tile("多空報酬差", pct(s.spread), "差距越大，分數越有鑑別力") +
     tile("待驗證", s.waiting, `還沒滿 ${h} 個交易日`);
-  $("vChartNote").textContent = `${ex ? "扣除大盤後的" : "個股"}累積報酬，基準日 = 新聞前最後一個收盤。藍底區間為目前的觀察期間（${h} 日）。`;
+  $("vChartNote").textContent = `${ex ? "扣除大盤後的" : "個股"}累積報酬，基準日 = 開盤前的新聞取前一日收盤，開盤後的新聞取當日收盤。藍底區間為目前的觀察期間（${h} 日）。`;
   $("vChart").innerHTML = chartSVG(d.event_curve.up, d.event_curve.down, h);
   $("vStr").innerHTML = d.by_strength.map(b => `<div class="sbar"><span>${b.strength}影響</span><span class="track"><span style="width:${(b.hit_rate || 0) * 100}%"></span><i></i></span><span class="num">${fr(b.hit_rate)}・${b.n} 筆</span></div>`).join("") + `<div class="note">虛線為 50%。</div>`;
   $("vRetH").textContent = ex ? "超額報酬" : "漲跌幅";
@@ -386,7 +387,7 @@ function renderVal() {
       : r.status === "wait_base" ? `<span class="res wait">等待基準價</span>`
       : r.pred === "flat" ? `<span class="res wait">中性・不計</span>` : r.hit ? `<span class="res ok">命中</span>` : `<span class="res bad">未命中</span>`;
     const done = r.status === "done";
-    return `<tr><td class="n">${r.date.slice(5).replace("-", "/")} ${r.time || ""}</td><td class="ttl">${linkTitle(r.url, esc(r.title))}<div class="code">${esc(srcLabel({source_name: (META && META.sources[r.source]) || r.source, via_outlet: r.via_outlet}))}</div></td><td><b>${esc(r.name)}</b> <span class="code">${esc(r.code)}</span>${r.type === "sector" ? `<div class="code">產業連動</div>` : ""}</td>
+    return `<tr><td class="n">${r.date.slice(5).replace("-", "/")} ${r.time || ""}</td><td class="ttl">${linkTitle(r.url, esc(r.title))}<div class="code">${esc(srcLabel({source_name: (META && META.sources[r.source]) || r.source, via_outlet: r.via_outlet}))}${r.merged > 1 ? `・當日共 ${r.merged} 則，已合併` : ""}</div></td><td><b>${esc(r.name)}</b> <span class="code">${esc(r.code)}</span>${r.type === "sector" ? `<div class="code">產業連動</div>` : ""}</td>
       <td class="${cls(r.score)}">${r.pred === "up" ? "利多" : r.pred === "down" ? "利空" : "中性"} <span class="code">${fmt(r.score)}</span></td>
       <td class="n">${done ? `${r.p0} → ${r.p1}<div class="code">${r.base_date.slice(5)} → ${r.end_date.slice(5)}</div>` : "—"}</td><td class="n ${r.ex != null ? cls(r.ex) : ""}">${done ? pct(r.ex, 2) + `<div class="code">${DIR[r.act]}</div>` : "—"}</td><td>${res}</td></tr>`;
   }).join("") || `<tr><td colspan="7" class="note" style="text-align:center;padding:20px">沒有符合條件的資料</td></tr>`;
@@ -401,6 +402,7 @@ function seg(id, cb) {
 seg("vH", v => { val.h = +v; loadVal(); });
 seg("vB", v => { val.benchmark = v; loadVal(); });
 seg("vS", v => { val.scope = v; loadVal(); });
+seg("vD", v => { val.dedupe = v; loadVal(); });
 document.querySelectorAll("#vRowF .chip").forEach(b => b.onclick = () => {
   val.rowFilt = b.dataset.f;
   document.querySelectorAll("#vRowF .chip").forEach(x => x.setAttribute("aria-pressed", x === b));

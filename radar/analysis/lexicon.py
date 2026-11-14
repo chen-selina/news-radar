@@ -1,6 +1,7 @@
 """情緒詞典與版本。
 
-正式詞典是 config/lexicon.json（進版控，隊友共用）。資料庫的 lexicon_versions／lexicon_terms
+正式詞典是 config/lexicon.json（進版控，隊友共用）：以論文字典（config/remi）為底，加上檔案裡列的調整。
+資料庫的 lexicon_versions／lexicon_terms
 存每一版的快照：檔案內容一改，current() 就會自動建立新版本。預測記下版本號，
 之後詞典怎麼改，都能用 get(conn, 版本) 還原當時的詞典。
 """
@@ -15,6 +16,7 @@ from pathlib import Path
 from .. import config
 
 LEXICON_PATH = config.CONFIG_DIR / "lexicon.json"
+HANDMADE_PATH = config.CONFIG_DIR / "lexicon-handmade.json"   # 原本人工給分的詞典，只用來比較
 _NOTE_KEY = "_說明"
 
 
@@ -31,21 +33,46 @@ class Lexicon:
 
 # ---------- 設定檔 ----------
 
+def _base_terms(name: str | None) -> dict[str, float]:
+    """設定檔 "base" 指定的底層字典。目前只有 remi（台灣財經情緒字典，每個詞 ±1）。"""
+    if not name:
+        return {}
+    if name != "remi":
+        raise ValueError(f"不認得的底層字典：{name}（目前只支援 remi）")
+    from . import remi          # 放在這裡才不會循環匯入
+    return {w: float(s) for w, s in remi.load().polarity.items()}
+
+
 def load_file(path: Path = LEXICON_PATH) -> Lexicon:
+    """有 "base" 時：先載入底層字典，再套上 "sentiment" 裡的調整（0＝停用底層字典的那個詞）。
+    沒有 "base" 時："sentiment" 就是完整的詞典（0 的詞照樣保留）。"""
     d = json.loads(path.read_text(encoding="utf-8"))
-    return Lexicon({k: float(v) for k, v in d["sentiment"].items()}, dict(d["sectors"]))
+    own = {k: float(v) for k, v in d["sentiment"].items()}
+    if not d.get("base"):
+        return Lexicon(own, dict(d["sectors"]))
+    sentiment = {**_base_terms(d["base"]), **own}
+    return Lexicon({t: w for t, w in sentiment.items() if w != 0}, dict(d["sectors"]))
 
 
 def save_file(lex: Lexicon, path: Path = LEXICON_PATH) -> None:
-    """一個詞一行，方便在 GitHub 上看差異。"""
-    note = json.loads(path.read_text(encoding="utf-8")).get(_NOTE_KEY) if path.exists() else None
+    """一個詞一行，方便在 GitHub 上看差異。有 "base" 時只寫和底層字典不同的地方。"""
+    old = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    note, base_name = old.get(_NOTE_KEY), old.get("base")
+    sentiment = dict(lex.sentiment)
+    if base_name:
+        base = _base_terms(base_name)
+        sentiment = {t: w for t, w in lex.sentiment.items() if base.get(t) != w}
+        sentiment.update({t: 0.0 for t in base if t not in lex.sentiment})    # 底層字典有、但被刪掉的詞
     dump = lambda v: json.dumps(v, ensure_ascii=False)
     num = lambda w: str(int(w)) if float(w).is_integer() else repr(w)
     lines = ["{"]
     if note:
         lines.append(f" {dump(_NOTE_KEY)}: {dump(note)},")
+    if base_name:
+        lines.append(f' "base": {dump(base_name)},')
     lines.append(' "sentiment": {')
-    lines.append(",\n".join(f"  {dump(t)}: {num(w)}" for t, w in lex.sentiment.items()))
+    if sentiment:
+        lines.append(",\n".join(f"  {dump(t)}: {num(w)}" for t, w in sentiment.items()))
     lines.append(" },")
     lines.append(' "sectors": {')
     lines.append(",\n".join(f"  {dump(k)}: {dump(s)}" for k, s in lex.sectors.items()))

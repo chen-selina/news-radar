@@ -23,7 +23,7 @@ ARTICLE = """<html><head><title>台積電營收創新高 | 經濟日報</title>
 def client(tmp_path, monkeypatch):
     path = tmp_path / "radar.db"
     lexfile = tmp_path / "lexicon.json"
-    shutil.copy(lexicon.LEXICON_PATH, lexfile)
+    shutil.copy(lexicon.HANDMADE_PATH, lexfile)
     c = db.connect(path)
     rows = [("2330", "台積電", ["台積"], ["半導體業", "晶圓代工"], 6e13),
             ("2408", "南亞科", [], ["半導體業", "記憶體"], 2e11),
@@ -182,6 +182,9 @@ def test_validation_and_params(client):
     d = client.get("/api/validation?horizon=1").json()
     assert d["params"]["horizon"] == 1 and d["summary"]["n"] == 0
     assert client.get("/api/validation?benchmark=xx").status_code == 422
+    one = client.get("/api/validation?horizon=1&dedupe=true").json()
+    assert one["params"]["dedupe"] is True and d["params"]["dedupe"] is False
+    assert len(one["rows"]) <= len(d["rows"]) and all(r["merged"] >= 1 for r in one["rows"])
     assert client.get("/api/validation?horizon=0").status_code == 422
     assert client.get("/api/validation?lexicon_version=7").status_code == 404
 
@@ -212,7 +215,7 @@ def test_meta_and_stocks(client):
 
 def test_no_stocks_gives_clear_error(tmp_path):
     lexfile = tmp_path / "lexicon.json"
-    shutil.copy(lexicon.LEXICON_PATH, lexfile)
+    shutil.copy(lexicon.HANDMADE_PATH, lexfile)
     c = TestClient(create_app(tmp_path / "empty.db", lexfile))
     r = c.post("/api/analyze-text", json={"title": "台積電"})
     assert r.status_code == 503 and "stocks.load" in r.json()["detail"]
@@ -254,7 +257,7 @@ def test_web_page_served(client):
 def test_crawl_busy_while_scheduled_job_runs(tmp_path):
     from radar import jobs
     lexfile = tmp_path / "lexicon.json"
-    shutil.copy(lexicon.LEXICON_PATH, lexfile)
+    shutil.copy(lexicon.HANDMADE_PATH, lexfile)
     lock = tmp_path / "jobs.lock"
     c = TestClient(create_app(tmp_path / "r.db", lexfile, lock))
     with jobs.Lock(lock):
@@ -322,7 +325,7 @@ def test_crawl_check_reports_source_error(client, fake_source, monkeypatch):
 def test_crawl_check_while_job_running_does_not_touch_sources(tmp_path, fake_source):
     from radar import jobs
     lexfile = tmp_path / "lexicon.json"
-    shutil.copy(lexicon.LEXICON_PATH, lexfile)
+    shutil.copy(lexicon.HANDMADE_PATH, lexfile)
     lock = tmp_path / "jobs.lock"
     c = TestClient(create_app(tmp_path / "r.db", lexfile, lock))
     with jobs.Lock(lock):

@@ -17,3 +17,6 @@ data/*.db-shm
 # 排程紀錄與鎖檔
 data/logs/
 data/jobs.lock
+
+# 權重估計的結果（由各自的資料算出）
+data/weights-*.json

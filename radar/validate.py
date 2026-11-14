@@ -1,15 +1,22 @@
 """預測驗證（回測）：新聞發布後第 N 個交易日，用真實收盤價檢查預測準不準。
 
 規則（PROJECT_BRIEF.md 第 6.2 節，與原型 evaluate() 相同）：
-- 基準價：13:30 收盤前發布 → 前一個交易日收盤；收盤後發布 → 當日收盤（當日休市則為之前最後一個交易日）。
+- 基準價：09:00 開盤前發布 → 前一個交易日收盤；開盤後發布（盤中與盤後）→ 當日收盤（當日休市則為之前最後一個交易日）。
   沒有發布時間的新聞視為盤前。交易日以證交所實際開市日為準（trading_days 資料表）。
+  2026-11-13 以前的規則以 13:30 收盤為界（與原型相同），盤中新聞的基準價是前一日收盤，於是 10 點的
+  「某某亮燈漲停」會被算成「預測利多、當天果然漲」，其實只是在報導已經發生的漲跌。回補資料實測，盤中新聞的
+  第 1 日命中率 57%、盤前盤後只有 41%。只有每日收盤價時，盤中才出來的消息從當日收盤後開始算。
 - 觀察期間：第 1、3、5、10 個交易日。
 - 比較基準：預設扣除大盤（個股報酬 − 加權指數報酬），可改成個股漲跌。
 - 實際方向：報酬 > 門檻為漲、< −門檻為跌，其餘持平；門檻預設 1%。
 - 命中：預測利多且實際漲，或預測利空且實際跌。中性預測不計入命中率。
+- 計算單位（dedupe）：預設每則新聞的每檔個股各算一筆。dedupe=True 時改成「一檔個股、一個基準交易日」算一筆：
+  同一事件的多篇報導（radar/dedupe.py）只取分數最大的一篇，同一天的不同事件取平均。
+  同一件事被 15 家媒體報導，就不會被當成 15 次獨立的命中或未命中。
 
 執行：python -m radar.validate                     （3 日、扣除大盤、門檻 1%）
       python -m radar.validate --horizon 5 --raw --threshold 2 --direct
+      python -m radar.validate --dedupe             （一檔個股一天只算一筆）
 """
 from __future__ import annotations
 
@@ -17,13 +24,14 @@ import argparse
 import bisect
 import sqlite3
 import sys
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 
 from . import db
-from .analysis.engine import strength
+from .analysis.engine import label_of, strength
+from .dedupe import event_groups
 
 HORIZONS = (1, 3, 5, 10)
-CLOSE_TIME = "13:30"
+OPEN_TIME = "09:00"   # 這個時間（含）之後發布的新聞，基準價用當日收盤
 EVENT_RANGE = range(-3, 11)  # 事件研究圖：新聞前 3 日到後 10 日
 TAIEX = "TAIEX"
 PRED = {"pos": "up", "neg": "down", "neu": "flat"}
@@ -54,6 +62,7 @@ class Row:
     ex: float | None = None      # 用來判斷方向的報酬（扣除大盤或個股本身）
     act: str | None = None       # up／down／flat
     hit: bool | None = None      # 中性預測為 None
+    merged: int = 1              # dedupe 時這一筆合併了幾則新聞
 
     @property
     def strength(self) -> str:
@@ -69,7 +78,7 @@ def base_index(days: list[str], day: str, time: str) -> int | None:
     """基準價是第幾個交易日；None＝當天的收盤資料還沒出來，-1＝新聞早於價格資料。"""
     if not days or day > days[-1]:
         return None
-    after = (time or "08:00") >= CLOSE_TIME
+    after = (time or "08:00") >= OPEN_TIME
     i = bisect.bisect_left(days, day) - 1  # 最後一個早於新聞日期的交易日
     if after and i + 1 < len(days) and days[i + 1] == day:
         i += 1
@@ -98,6 +107,34 @@ def load_rows(conn: sqlite3.Connection, lexicon_version: int | None = None) -> l
     return out
 
 
+def collapse(rows: list[Row], days: list[str]) -> list[Row]:
+    """一檔個股、一個基準交易日只留一筆（同一天開盤前後的新聞基準日不同，分開算）。
+
+    1. 這檔個股當天有被直接提及，就不看產業連動的那幾筆。
+    2. 同一事件的多篇報導只取分數絕對值最大的一篇。
+    3. 不同事件的分數取平均，再依平均分數決定利多／利空／中性。
+    留下來的那一筆顯示分數絕對值最大的新聞，merged 記錄合併了幾則。
+    """
+    event = event_groups(list({r.news_id: (r.news_id, r.title, f"{r.date}T{r.time or '00:00'}:00") for r in rows}.values()))
+    groups: dict[tuple, list[Row]] = {}
+    for r in rows:
+        bi = base_index(days, r.date, r.time)
+        day = days[bi] if bi is not None and bi >= 0 else "?" + r.date
+        groups.setdefault((r.code, day), []).append(r)
+    out = []
+    for rs in groups.values():
+        use = [r for r in rs if r.type == "direct"] or rs
+        best: dict[int, Row] = {}
+        for r in use:
+            e = event[r.news_id]
+            if e not in best or abs(r.score) > abs(best[e].score):
+                best[e] = r
+        score = sum(r.score for r in best.values()) / len(best)
+        top = max(best.values(), key=lambda r: abs(r.score))
+        out.append(replace(top, score=score, pred=PRED[label_of(score)], merged=len(rs)))
+    return out
+
+
 def _prices(conn: sqlite3.Connection, codes: set[str]) -> dict[str, dict[str, float]]:
     out: dict[str, dict[str, float]] = {}
     codes = codes | {TAIEX}
@@ -116,13 +153,17 @@ def _rate(rows: list[Row]) -> float | None:
 
 
 def validate(conn: sqlite3.Connection, horizon: int = 3, benchmark: str = "excess", threshold: float = 0.01,
-             scope: str = "all", lexicon_version: int | None = None) -> dict:
+             scope: str = "all", lexicon_version: int | None = None, rows: list[Row] | None = None, dedupe: bool = False) -> dict:
+    """rows：直接給預測（radar/compare.py 比較不同字典時用），不從資料庫讀；會被就地填入驗證結果。"""
     if horizon < 1:
         raise ValueError("觀察期間至少 1 個交易日")
     if benchmark not in ("excess", "raw") or scope not in ("all", "direct"):
         raise ValueError("benchmark 只能是 excess／raw，scope 只能是 all／direct")
     days = [r[0] for r in conn.execute("SELECT date FROM trading_days ORDER BY date")]
-    rows = [r for r in load_rows(conn, lexicon_version) if scope == "all" or r.type == "direct"]
+    rows = [r for r in (load_rows(conn, lexicon_version) if rows is None else rows)
+            if scope == "all" or r.type == "direct"]
+    if dedupe:
+        rows = collapse(rows, days)
     px = _prices(conn, {r.code for r in rows})
     market = px.get(TAIEX, {})
     use_excess = benchmark == "excess" and bool(market)
@@ -184,7 +225,7 @@ def validate(conn: sqlite3.Connection, horizon: int = 3, benchmark: str = "exces
     order = sorted(rows, key=lambda r: (r.date, abs(r.score)), reverse=True)
     return {
         "params": {"horizon": horizon, "benchmark": "excess" if use_excess else "raw", "threshold": threshold,
-                   "scope": scope, "lexicon_version": lexicon_version},
+                   "scope": scope, "lexicon_version": lexicon_version, "dedupe": dedupe},
         "notes": ([] if use_excess or benchmark == "raw" else ["價格資料沒有大盤（TAIEX），已改用個股漲跌。"]),
         "data_range": {"first": days[0] if days else None, "last": days[-1] if days else None},
         "summary": {
@@ -212,11 +253,12 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--threshold", type=float, default=1.0, help="持平門檻，單位 %%（預設 1）")
     ap.add_argument("--direct", action="store_true", help="只看直接提及的個股")
     ap.add_argument("--recalc", type=int, metavar="版本", help="改用某版詞典的重算結果（預設用原始預測）")
+    ap.add_argument("--dedupe", action="store_true", help="一檔個股、一個交易日只算一筆（同事件的多篇報導不重複計算）")
     ap.add_argument("--db", help="資料庫路徑（預設 data/radar.db）")
     args = ap.parse_args(argv)
     conn = db.connect(args.db)
     res = validate(conn, args.horizon, "raw" if args.raw else "excess", args.threshold / 100,
-                   "direct" if args.direct else "all", args.recalc)
+                   "direct" if args.direct else "all", args.recalc, dedupe=args.dedupe)
     s, rng = res["summary"], res["data_range"]
     fr = lambda x: "—" if x is None else f"{x * 100:.0f}%"
     print(f"價格資料 {rng['first']} ～ {rng['last']}；觀察第 {args.horizon} 個交易日、"

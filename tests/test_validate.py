@@ -1,4 +1,4 @@
-"""預測驗證：基準價（盤前／盤後、休市）、觀察期間、扣除大盤、門檻、命中、指標。
+"""預測驗證：基準價（開盤前／開盤後、休市）、觀察期間、扣除大盤、門檻、命中、指標。
 
 測試用的交易日曆刻意跳過 10/23、10/26（颱風休市）與週末。
 """
@@ -42,18 +42,21 @@ def add(conn, published, stocks, nid=[0]):
 
 
 def test_base_index_rules():
-    assert DAYS[base_index(DAYS, "2026-10-21", "10:00")] == "2026-10-20"  # 盤前 → 前一個交易日
+    assert DAYS[base_index(DAYS, "2026-10-21", "08:30")] == "2026-10-20"  # 開盤前 → 前一個交易日
+    assert DAYS[base_index(DAYS, "2026-10-21", "09:00")] == "2026-10-21"  # 開盤後（盤中）→ 當日收盤
+    assert DAYS[base_index(DAYS, "2026-10-21", "10:00")] == "2026-10-21"  # 盤中報導當天漲跌的新聞，不能拿當天收盤來驗證
     assert DAYS[base_index(DAYS, "2026-10-21", "13:30")] == "2026-10-21"  # 收盤後 → 當日
     assert DAYS[base_index(DAYS, "2026-10-21", "")] == "2026-10-20"       # 沒有時間視為盤前
     assert DAYS[base_index(DAYS, "2026-10-24", "15:00")] == "2026-10-22"  # 週末 → 之前最後一個交易日
-    assert DAYS[base_index(DAYS, "2026-10-26", "09:00")] == "2026-10-22"  # 颱風休市
-    assert DAYS[base_index(DAYS, "2026-10-27", "09:00")] == "2026-10-22"  # 休市後第一天盤前
-    assert base_index(DAYS, "2026-10-30", "09:00") is None                # 還沒有當天之後的資料
-    assert base_index(DAYS, "2026-10-01", "09:00") == -1                  # 早於價格資料
+    assert DAYS[base_index(DAYS, "2026-10-26", "10:00")] == "2026-10-22"  # 颱風休市
+    assert DAYS[base_index(DAYS, "2026-10-27", "08:00")] == "2026-10-22"  # 休市後第一天盤前
+    assert base_index(DAYS, "2026-10-30", "08:00") is None                # 還沒有當天之後的資料
+    assert base_index(DAYS, "2026-10-29", "10:00") == len(DAYS) - 1       # 最後一個交易日的盤中新聞：基準是當日收盤
+    assert base_index(DAYS, "2026-10-01", "08:00") == -1                  # 早於價格資料
 
 
 def test_hit_with_excess_return(conn):
-    add(conn, "2026-10-21T10:00:00+08:00", [("1111", 3, "pos", "direct"), ("2222", -2, "neg", "direct")])
+    add(conn, "2026-10-21T08:00:00+08:00", [("1111", 3, "pos", "direct"), ("2222", -2, "neg", "direct")])
     res = validate(conn, horizon=3)
     rows = {r["code"]: r for r in res["rows"]}
     a = rows["1111"]
@@ -67,7 +70,7 @@ def test_hit_with_excess_return(conn):
 
 
 def test_raw_vs_excess_and_threshold(conn):
-    add(conn, "2026-10-21T10:00:00+08:00", [("2222", 2, "pos", "direct")])
+    add(conn, "2026-10-21T08:00:00+08:00", [("2222", 2, "pos", "direct")])
     # 乙公司 3 日跌約 5.9%：個股漲跌與扣除大盤都是跌 → 利多未命中
     assert validate(conn, horizon=3, benchmark="raw")["rows"][0]["hit"] is False
     # 門檻 10%：跌幅不到門檻 → 持平，仍是未命中
@@ -76,14 +79,14 @@ def test_raw_vs_excess_and_threshold(conn):
 
 
 def test_neutral_not_counted(conn):
-    add(conn, "2026-10-21T10:00:00+08:00", [("1111", 0.5, "neu", "direct")])
+    add(conn, "2026-10-21T08:00:00+08:00", [("1111", 0.5, "neu", "direct")])
     res = validate(conn, horizon=1)
     assert res["rows"][0]["hit"] is None and res["summary"]["n"] == 0 and res["summary"]["hit_rate"] is None
 
 
 def test_wait_and_missing_price(conn):
-    add(conn, "2026-10-28T09:00:00+08:00", [("1111", 2, "pos", "direct")])   # 基準 10/27，第 5 日還沒到
-    add(conn, "2026-10-30T09:00:00+08:00", [("1111", 2, "pos", "direct")])   # 基準日資料還沒出來
+    add(conn, "2026-10-28T08:00:00+08:00", [("1111", 2, "pos", "direct")])   # 基準 10/27，第 5 日還沒到
+    add(conn, "2026-10-30T08:00:00+08:00", [("1111", 2, "pos", "direct")])   # 基準日資料還沒出來
     add(conn, "2026-10-21T15:00:00+08:00", [("3333", 2, "pos", "sector")])   # 丙公司停牌
     res = {r["date"]: r for r in validate(conn, horizon=5)["rows"]}
     assert res["2026-10-28"]["status"] == "wait" and res["2026-10-28"]["left"] == 3
@@ -92,13 +95,13 @@ def test_wait_and_missing_price(conn):
 
 
 def test_scope_direct_only(conn):
-    add(conn, "2026-10-21T10:00:00+08:00", [("1111", 2, "pos", "direct"), ("2222", 1.5, "pos", "sector")])
+    add(conn, "2026-10-21T08:00:00+08:00", [("1111", 2, "pos", "direct"), ("2222", 1.5, "pos", "sector")])
     assert [r["code"] for r in validate(conn, scope="direct")["rows"]] == ["1111"]
     assert len(validate(conn, scope="all")["rows"]) == 2
 
 
 def test_strength_buckets_and_event_curve(conn):
-    add(conn, "2026-10-22T10:00:00+08:00", [("1111", 4.5, "pos", "direct"), ("2222", -1.2, "neg", "direct")])
+    add(conn, "2026-10-22T08:00:00+08:00", [("1111", 4.5, "pos", "direct"), ("2222", -1.2, "neg", "direct")])
     res = validate(conn, horizon=1)
     by = {b["strength"]: b for b in res["by_strength"]}
     assert by["高"]["n"] == 1 and by["低"]["n"] == 1 and by["中"]["n"] == 0
@@ -110,7 +113,7 @@ def test_strength_buckets_and_event_curve(conn):
 
 
 def test_recalc_source(conn):
-    add(conn, "2026-10-21T10:00:00+08:00", [("1111", 3, "pos", "direct")])
+    add(conn, "2026-10-21T08:00:00+08:00", [("1111", 3, "pos", "direct")])
     conn.execute("INSERT INTO recalcs (news_id, lexicon_version, total_score, label, created_at) VALUES (1, 1, -3, 'neg', 'now')")
     conn.execute("INSERT INTO recalc_stocks (news_id, lexicon_version, stock_code, score, label, type) "
                  "VALUES (1, 1, '1111', -3, 'neg', 'direct')")
@@ -120,7 +123,7 @@ def test_recalc_source(conn):
 
 def test_without_market_falls_back_to_raw(conn):
     conn.execute("DELETE FROM prices WHERE code = 'TAIEX'")
-    add(conn, "2026-10-21T10:00:00+08:00", [("1111", 3, "pos", "direct")])
+    add(conn, "2026-10-21T08:00:00+08:00", [("1111", 3, "pos", "direct")])
     res = validate(conn, horizon=1)
     assert res["params"]["benchmark"] == "raw" and res["notes"]
     assert res["rows"][0]["ex"] == pytest.approx(0.03)

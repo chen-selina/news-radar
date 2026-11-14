@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 from radar.analysis.engine import Analyzer, Stock
-from radar.analysis.lexicon import Lexicon, load_file
+from radar.analysis.lexicon import HANDMADE_PATH, Lexicon, load_file
 
 GOLDEN = json.loads((Path(__file__).parent / "fixtures" / "analysis" / "golden.json").read_text(encoding="utf-8"))
 STOCKS = [Stock(s["code"], s["name"], tuple(s["aliases"]), tuple(s["sectors"])) for s in GOLDEN["stocks"]]
@@ -46,9 +46,9 @@ def test_matches_prototype(case):
 
 
 def test_config_lexicon_keeps_prototype_terms():
-    """config/lexicon.json 從原型的 BASE_LEX、SECTOR_KW 出發：原型的詞都還在（分數可以調整、可以新增），
+    """config/lexicon-handmade.json 從原型的 BASE_LEX、SECTOR_KW 出發：原型的詞都還在（分數可以調整、可以新增），
     產業關鍵字完全相同。與原型逐項比對用的是 golden.json 裡的原型詞典，不受這個檔影響。"""
-    lex = load_file()
+    lex = load_file(HANDMADE_PATH)
     assert list(lex.sentiment)[:len(BASE.sentiment)] == list(BASE.sentiment)
     assert list(lex.sectors.items()) == list(BASE.sectors.items())
 

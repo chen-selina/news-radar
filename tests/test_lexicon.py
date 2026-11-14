@@ -10,7 +10,7 @@ from radar.analysis import lexicon
 @pytest.fixture
 def lexfile(tmp_path):
     p = tmp_path / "lexicon.json"
-    shutil.copy(lexicon.LEXICON_PATH, p)
+    shutil.copy(lexicon.HANDMADE_PATH, p)
     return p
 
 
@@ -73,3 +73,35 @@ def test_rejects_bad_weight(conn, lexfile, w):
 def test_unknown_version(conn):
     with pytest.raises(KeyError):
         lexicon.get(conn, 99)
+
+
+# ---------- 以論文字典為底（"base": "remi"） ----------
+
+def _remi_file(tmp_path):
+    p = tmp_path / "lexicon.json"
+    p.write_text('{"_說明": "x", "base": "remi", "sentiment": {}, "sectors": {"晶圓": "半導體"}}', encoding="utf-8")
+    return p
+
+
+def test_official_lexicon_is_paper_dictionary():
+    from radar.analysis import remi
+    lex = lexicon.load_file()
+    assert lex.sentiment == {w: float(s) for w, s in remi.load().polarity.items()}
+    assert set(lex.sentiment.values()) == {1.0, -1.0}
+    assert lex.sectors == lexicon.load_file(lexicon.HANDMADE_PATH).sectors
+
+
+def test_base_file_only_stores_differences(tmp_path):
+    from radar.analysis import remi
+    p, conn = _remi_file(tmp_path), db.connect(tmp_path / "t.db")
+    base = remi.load().polarity
+    gone = next(iter(base))
+    lexicon.set_term(conn, "測試新詞", 1.5, p)
+    lexicon.remove_term(conn, gone, p)
+    import json
+    d = json.loads(p.read_text(encoding="utf-8"))
+    assert d["base"] == "remi" and d["sentiment"] == {"測試新詞": 1.5, gone: 0}
+    lex = lexicon.load_file(p)
+    assert lex.sentiment["測試新詞"] == 1.5 and gone not in lex.sentiment
+    assert len(lex.sentiment) == len(base)                       # 加一個、刪一個
+    assert lexicon.current(conn, p).version == 2                 # 重新讀檔內容不變，不會多出新版本

@@ -11,7 +11,7 @@ from pathlib import Path
 
 from . import config
 
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS stocks (
@@ -134,6 +134,39 @@ CREATE TABLE IF NOT EXISTS job_runs (
     summary     TEXT NOT NULL DEFAULT ''   -- 白話摘要，例如「新收錄 12 則；收盤價 2 天」
 );
 
+-- 回補的歷史新聞（radar/backfill.py）。和 news 分開存：這些是事後補抓的，沒有「收錄當下鎖定」的預測，
+-- 只用來訓練與回測，不會出現在網站的新聞列表與預測驗證裡。
+CREATE TABLE IF NOT EXISTS backfill_days (
+    code       TEXT NOT NULL,               -- 已向 FinMind 查過這檔個股這一天的新聞
+    date       TEXT NOT NULL,               -- 西元 YYYY-MM-DD
+    found      INTEGER NOT NULL,            -- 查到幾則（含略過的）
+    fetched_at TEXT NOT NULL,
+    PRIMARY KEY (code, date)
+);
+
+CREATE TABLE IF NOT EXISTS backfill_news (
+    id           INTEGER PRIMARY KEY,
+    url          TEXT NOT NULL UNIQUE,
+    outlet       TEXT,                      -- FinMind 標示的媒體名稱
+    list_title   TEXT NOT NULL,             -- FinMind 給的標題
+    listed_at    TEXT,                      -- FinMind 給的時間，已轉成台北時間 ISO 8601
+    status       TEXT NOT NULL DEFAULT 'pending'
+                 CHECK (status IN ('pending', 'ok', 'partial', 'skip', 'fail')),
+                                            -- ok＝有內文；partial＝只有標題或摘要；skip＝不抓（討論區、轉址）；fail＝抓不到
+    reason       TEXT,                      -- skip／fail／partial 的原因
+    title        TEXT NOT NULL DEFAULT '',  -- 從網頁讀到的標題
+    body         TEXT NOT NULL DEFAULT '',
+    published_at TEXT,                      -- 網頁上的發布時間；讀不到就用 listed_at
+    fetched_at   TEXT
+);
+
+CREATE TABLE IF NOT EXISTS backfill_tags (
+    news_id INTEGER NOT NULL REFERENCES backfill_news(id),
+    code    TEXT NOT NULL,                  -- FinMind 把這則新聞列在哪一檔個股底下
+    PRIMARY KEY (news_id, code)
+);
+
+CREATE INDEX IF NOT EXISTS idx_backfill_status ON backfill_news(status);
 CREATE INDEX IF NOT EXISTS idx_news_published ON news(published_at);
 CREATE INDEX IF NOT EXISTS idx_pstocks_code ON prediction_stocks(stock_code);
 CREATE INDEX IF NOT EXISTS idx_prices_code ON prices(code, date);
