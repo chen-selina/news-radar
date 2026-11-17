@@ -5,7 +5,7 @@
 2. 否定反轉：詞前 5 字內（遇標點截斷）有否定詞就反轉分數。
 3. 加強：詞前 4 字內有加強詞，分數 ×1.5。
 4. 標題加權：出現在標題的詞 ×1.5。
-5. 直接提及的公司取提到它的句子分數加總；產業連動取一半，每族群最多 4 檔。
+5. 直接提及的公司取提到它的句子分數加總；產業連動取一半，每族群最多 4 檔（正式版不設上限，見 sector_max）。
 
 與原型一致性由 tests/test_engine_parity.py 逐項比對 tools/make_golden.js 產生的標準答案。
 唯一已知差異：JavaScript 字串以 UTF-16 計數，罕見的擴充區字元（例如表情符號）在原型
@@ -28,7 +28,7 @@ CLAUSE_END = "，；："     # 子句的分隔（只用全形：半形逗號、�
 TITLE_WEIGHT = BOOST_WEIGHT = 1.5
 SECTOR_SHARE = 0.5   # 產業連動取一半分數
 SECTOR_MIN = 0.5     # 產業連動分數絕對值低於此值就不列出
-SECTOR_MAX_STOCKS = 4
+SECTOR_MAX_STOCKS = 4   # 原型：每個族群最多幾檔
 LABELS = {"pos": "利多", "neg": "利空", "neu": "中性"}
 
 
@@ -142,12 +142,15 @@ class Analyzer:
       （「群創遭賣超，台玻獲買超」不會互相抵銷）。沒提到公司的子句歸給前一家公司。
     - direct_fallback：提到公司的地方沒有情緒詞時怎麼辦。"total"＝原型做法，取整則總分的一半；
       "title"＝只有公司出現在標題時才這樣做，否則 0 分（列為中性，不計入命中率）。
+    - sector_max：產業連動每個族群最多幾檔。4＝原型做法（依 stocks 的順序取前 4 檔）；
+      None＝族群裡的公司全部連動（2026-11-17 起正式版）。
     正式流程用 production_analyzer() 建立，所有修正都會開啟。
     """
 
     def __init__(self, lexicon: Lexicon, stocks: list[Stock], name_rules: NameRules | None = None,
                  sector_fallback: str = "total", repeat_decay: float = 1.0,
-                 direct_scope: str = "sentence", direct_fallback: str = "total"):
+                 direct_scope: str = "sentence", direct_fallback: str = "total",
+                 sector_max: int | None = SECTOR_MAX_STOCKS):
         if sector_fallback not in ("total", "title"):
             raise ValueError("sector_fallback 只能是 total 或 title")
         if direct_scope not in ("sentence", "segment"):
@@ -156,6 +159,9 @@ class Analyzer:
             raise ValueError("direct_fallback 只能是 total 或 title")
         if not 0 < repeat_decay <= 1:
             raise ValueError("repeat_decay 必須大於 0、不超過 1")
+        if sector_max is not None and sector_max < 1:
+            raise ValueError("sector_max 必須至少 1，或 None（不設上限）")
+        self.sector_max = sector_max
         self.repeat_decay = repeat_decay
         self.direct_scope = direct_scope
         self.direct_fallback = direct_fallback
@@ -320,7 +326,7 @@ class Analyzer:
             sc *= SECTOR_SHARE
             if abs(sc) < SECTOR_MIN:
                 continue
-            members = [s for s in self.stocks if sec in s.sectors and s.code not in imp][:SECTOR_MAX_STOCKS]
+            members = [s for s in self.stocks if sec in s.sectors and s.code not in imp][:self.sector_max]
             for s in members:
                 imp[s.code] = Impact(s, "sector", sc, sector=sec)
 
@@ -343,4 +349,4 @@ def _reason(v: Impact, text: str, sents: list[tuple[int, int]]) -> str:
 def production_analyzer(lexicon: Lexicon, stocks: list[Stock]) -> Analyzer:
     """正式流程（爬蟲建立預測、命令列分析）用的分析器：開啟所有原型之後加入的修正。"""
     return Analyzer(lexicon, stocks, NameRules.load(), sector_fallback="title",
-                    repeat_decay=0.5, direct_scope="segment", direct_fallback="title")
+                    repeat_decay=0.5, direct_scope="segment", direct_fallback="title", sector_max=None)

@@ -12,7 +12,7 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 WINDOW_HOURS = 36
 THRESHOLD = 0.5
@@ -55,16 +55,42 @@ def event_groups(news: list[tuple[int, str, str | None]], threshold: float = THR
             x = parent[x]
         return x
 
-    grams = [(nid, bigrams(title), t) for nid, title, t in news]
-    for i, (a, ga, ta) in enumerate(grams):
-        for b, gb, tb in grams[i + 1:]:
-            gap = _hours(ta, tb)
-            if gap is None:
-                same = ga == gb and len(ga) >= MIN_SHARED
-            else:
-                same = gap <= window_hours and similarity(ga, gb) >= threshold
-            if same:
-                ra, rb = find(a), find(b)
-                if ra != rb:
-                    parent[max(ra, rb)] = min(ra, rb)
+    def union(a: int, b: int) -> None:
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[max(ra, rb)] = min(ra, rb)
+
+    timed: list[tuple[float, int, frozenset[str]]] = []
+    untimed: list[tuple[int, frozenset[str]]] = []
+    same_title: dict[frozenset[str], list[int]] = {}
+    for nid, title, t in news:
+        g = bigrams(title)
+        ts = _timestamp(t)
+        if ts is None:
+            untimed.append((nid, g))
+        else:
+            timed.append((ts, nid, g))
+        if len(g) >= MIN_SHARED:
+            same_title.setdefault(g, []).append(nid)
+    # 有時間的：依時間排序，只和時間窗內的比（新聞多的時候不必兩兩全比）
+    timed.sort()
+    for i, (ta, a, ga) in enumerate(timed):
+        for tb, b, gb in timed[i + 1:]:
+            if tb - ta > window_hours * 3600:
+                break
+            if similarity(ga, gb) >= threshold:
+                union(a, b)
+    # 沒有時間的：只和標題完全相同的併
+    for a, g in untimed:
+        for b in same_title.get(g, ()):
+            union(a, b)
     return {nid: find(nid) for nid in parent}
+
+
+def _timestamp(t: str | None) -> float | None:
+    """ISO 時間 → 秒數；沒有時區的當成台北時間。讀不出來回傳 None。"""
+    try:
+        d = datetime.fromisoformat(t)
+    except (TypeError, ValueError):
+        return None
+    return (d if d.tzinfo else d.replace(tzinfo=timezone(timedelta(hours=8)))).timestamp()

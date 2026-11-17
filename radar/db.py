@@ -166,6 +166,31 @@ CREATE TABLE IF NOT EXISTS backfill_tags (
     PRIMARY KEY (news_id, code)
 );
 
+-- 時事新聞（radar/events.py）：研究用，和網站的 news、回補的 backfill_news 分開，不建立鎖定的預測
+CREATE TABLE IF NOT EXISTS events_news (
+    id           INTEGER PRIMARY KEY,
+    source       TEXT NOT NULL,             -- 來源代號，目前只有 cnyes（鉅亨網）
+    source_id    TEXT NOT NULL,             -- 來源自己的新聞編號
+    category     TEXT NOT NULL,             -- 來源的分類代號，例如 tw_macro、wd_macro
+    url          TEXT NOT NULL UNIQUE,      -- 原文網址
+    title        TEXT NOT NULL,
+    body         TEXT NOT NULL DEFAULT '',  -- 純文字，最多 5,000 字，只供分析
+    published_at TEXT NOT NULL,             -- 台北時間 ISO 8601
+    fetched_at   TEXT NOT NULL,
+    UNIQUE (source, source_id)
+);
+
+CREATE TABLE IF NOT EXISTS events_windows (
+    source     TEXT NOT NULL,               -- 已經完整抓過的時間區段（只記已經過去的區段）
+    category   TEXT NOT NULL,
+    start_date TEXT NOT NULL,               -- 西元 YYYY-MM-DD，含
+    end_date   TEXT NOT NULL,               -- 西元 YYYY-MM-DD，含
+    found      INTEGER NOT NULL,
+    fetched_at TEXT NOT NULL,
+    PRIMARY KEY (source, category, start_date)
+);
+
+CREATE INDEX IF NOT EXISTS idx_events_published ON events_news(published_at);
 CREATE INDEX IF NOT EXISTS idx_backfill_status ON backfill_news(status);
 CREATE INDEX IF NOT EXISTS idx_news_published ON news(published_at);
 CREATE INDEX IF NOT EXISTS idx_pstocks_code ON prediction_stocks(stock_code);

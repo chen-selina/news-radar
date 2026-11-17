@@ -66,6 +66,18 @@ def test_sector_picks_first_four_in_given_order():
     assert [v.stock.code for v in a.impacts] == ["1000", "1001", "1002", "1003"]
 
 
+def test_sector_max_none_links_every_member():
+    many = [Stock(str(1000 + i), f"記憶{i}號", (), ("記憶體",), market_cap=100 - i) for i in range(6)]
+    a = Analyzer(LEX, many, sector_max=None).analyze("", "HBM 營收成長。")
+    assert [v.stock.code for v in a.impacts] == [str(1000 + i) for i in range(6)]
+    assert all(v.type == "sector" for v in a.impacts)
+
+
+def test_bad_sector_max_rejected():
+    with pytest.raises(ValueError):
+        Analyzer(LEX, [], sector_max=0)
+
+
 SECTOR_LEX = Lexicon({"爆賣": 2, "上漲": 1}, {"手機": "手機", "DRAM": "記憶體"})
 PHONE = [Stock("2454", "聯發科", (), ("手機",)), Stock("2408", "南亞科", (), ("記憶體",))]
 
@@ -101,6 +113,7 @@ def test_production_analyzer_turns_on_all_fixes():
     an = production_analyzer(SECTOR_LEX, PHONE)
     assert an.sector_fallback == "title" and an.name_rules is not None
     assert (an.repeat_decay, an.direct_scope, an.direct_fallback) == (0.5, "segment", "title")
+    assert an.sector_max is None
 
 
 # ---- 2026-11-10 加入的三項修正（預設關閉，行為與原型相同） ----

@@ -88,7 +88,9 @@ def test_official_lexicon_is_paper_dictionary():
     lex = lexicon.load_file()
     assert lex.sentiment == {w: float(s) for w, s in remi.load().polarity.items()}
     assert set(lex.sentiment.values()) == {1.0, -1.0}
-    assert lex.sectors == lexicon.load_file(lexicon.HANDMADE_PATH).sectors
+    # 2026-11-17 起：產業關鍵字和手工詞典相同，但產業名稱類的關鍵字改連到官方產業別（整個產業都連動）
+    assert set(lexicon.load_file(lexicon.HANDMADE_PATH).sectors) <= set(lex.sectors)
+    assert (lex.sectors["半導體"], lex.sectors["鋼鐵"], lex.sectors["金控"]) == ("半導體業", "鋼鐵工業", "金融保險")
 
 
 def test_base_file_only_stores_differences(tmp_path):

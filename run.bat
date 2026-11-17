@@ -18,6 +18,8 @@ if "%~1"=="" (
   echo   run backfill --status     show backfill progress
   echo   run compare --backfill    compare the three dictionaries
   echo   run validate --dedupe     validate predictions
+  echo   run events                fetch current-events news (research)
+  echo   run events_eval           test current-events news against the market
   exit /b 1
 )
 set "CMD=%~1"
