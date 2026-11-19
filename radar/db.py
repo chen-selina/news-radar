@@ -111,6 +111,17 @@ CREATE TABLE IF NOT EXISTS prices (
     PRIMARY KEY (date, code)
 );
 
+-- 還原股價的調整係數（除權息、減資）：還原收盤＝close × factor。radar/prices/adjust.py 從外部 CSV 匯入。
+-- 係數以匯入資料的最後一天為 1，往前遞減；沒有係數的日期沿用最近一個較早日期的係數（最後一天以後＝1）。
+-- 只用來算報酬（radar/validate.py 的 _prices）；網站顯示的基準價與第 N 日價格仍是原始收盤。
+CREATE TABLE IF NOT EXISTS price_adj (
+    date   TEXT NOT NULL,                   -- 西元 YYYY-MM-DD
+    code   TEXT NOT NULL,
+    factor REAL NOT NULL,
+    source TEXT NOT NULL,                   -- 匯入來源（檔名）
+    PRIMARY KEY (code, date)
+);
+
 -- 證交所實際交易日（國定假日、颱風休市都不在裡面），驗證時「第 N 個交易日」以此為準
 CREATE TABLE IF NOT EXISTS trading_days (
     date TEXT PRIMARY KEY                   -- 西元 YYYY-MM-DD
@@ -212,6 +223,61 @@ CREATE TRIGGER IF NOT EXISTS lexterms_no_update BEFORE UPDATE ON lexicon_terms
 BEGIN SELECT RAISE(ABORT, '詞典版本建立後不可修改，請新增版本'); END;
 CREATE TRIGGER IF NOT EXISTS lexterms_no_delete BEFORE DELETE ON lexicon_terms
 BEGIN SELECT RAISE(ABORT, '詞典版本建立後不可修改，請新增版本'); END;
+
+-- 機器學習模型（radar/mlmodel.py）：每個版本、每個觀察期間一個三分類邏輯迴歸，參數整個存在這裡，建立後不可修改
+CREATE TABLE IF NOT EXISTS ml_models (
+    version          INTEGER NOT NULL,
+    horizon          INTEGER NOT NULL,
+    created_at       TEXT NOT NULL,
+    features         TEXT NOT NULL,         -- JSON：特徵名稱
+    params_json      TEXT NOT NULL,         -- JSON：類別、係數、截距、補值、平均、標準差、C
+    lexicon_checksum TEXT NOT NULL,         -- 算特徵用的字典（論文＋個股擴充）
+    target_version   TEXT NOT NULL,         -- 標籤定義（radar/targets.py）
+    train_first      TEXT,
+    train_last       TEXT,
+    n_train          INTEGER NOT NULL,
+    eval_json        TEXT,                  -- JSON：逐月 walk-forward 的樣本外指標
+    PRIMARY KEY (version, horizon)
+);
+
+-- 機器學習的原始預測：新聞收錄當下建立，和字典預測一樣不可修改
+CREATE TABLE IF NOT EXISTS ml_predictions (
+    news_id       INTEGER NOT NULL REFERENCES news(id),
+    stock_code    TEXT NOT NULL,
+    horizon       INTEGER NOT NULL,
+    model_version INTEGER NOT NULL,
+    label         TEXT NOT NULL CHECK (label IN ('pos', 'neg', 'neu')),
+    p_up          REAL NOT NULL,
+    p_flat        REAL NOT NULL,
+    p_down        REAL NOT NULL,
+    features_json TEXT NOT NULL,
+    created_at    TEXT NOT NULL,
+    PRIMARY KEY (news_id, stock_code, horizon)
+);
+
+-- 機器學習的重算結果：用某一版模型重新預測舊新聞，與原始預測分開存，可以覆寫
+CREATE TABLE IF NOT EXISTS ml_recalcs (
+    news_id       INTEGER NOT NULL REFERENCES news(id),
+    stock_code    TEXT NOT NULL,
+    horizon       INTEGER NOT NULL,
+    model_version INTEGER NOT NULL,
+    label         TEXT NOT NULL CHECK (label IN ('pos', 'neg', 'neu')),
+    p_up          REAL NOT NULL,
+    p_flat        REAL NOT NULL,
+    p_down        REAL NOT NULL,
+    features_json TEXT NOT NULL,
+    created_at    TEXT NOT NULL,
+    PRIMARY KEY (news_id, stock_code, horizon, model_version)
+);
+
+CREATE TRIGGER IF NOT EXISTS mlmodels_no_update BEFORE UPDATE ON ml_models
+BEGIN SELECT RAISE(ABORT, '模型建立後不可修改，請訓練新版本'); END;
+CREATE TRIGGER IF NOT EXISTS mlmodels_no_delete BEFORE DELETE ON ml_models
+BEGIN SELECT RAISE(ABORT, '模型建立後不可修改，請訓練新版本'); END;
+CREATE TRIGGER IF NOT EXISTS mlpred_no_update BEFORE UPDATE ON ml_predictions
+BEGIN SELECT RAISE(ABORT, '預測建立後不可修改'); END;
+CREATE TRIGGER IF NOT EXISTS mlpred_no_delete BEFORE DELETE ON ml_predictions
+BEGIN SELECT RAISE(ABORT, '預測建立後不可刪除'); END;
 """
 
 

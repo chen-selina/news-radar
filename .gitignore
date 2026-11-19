@@ -21,3 +21,6 @@ data/jobs.lock
 # 權重估計的結果（由各自的資料算出）
 data/weights-*.json
 data/tuned-*.json
+
+# 外部匯入的資料（例如 Apex 匯出的股價、籌碼），不進版控
+data/external/

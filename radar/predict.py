@@ -57,7 +57,22 @@ def create_prediction(conn: sqlite3.Connection, news_id: int, an: Analyzer) -> i
         conn.executemany(
             "INSERT INTO prediction_stocks (prediction_id, stock_code, score, label, type, sector, reason) "
             "VALUES (?, ?, ?, ?, ?, ?, ?)", [(pid, *s) for s in stocks])
+    ml_predict(conn, news_id)
     return pid
+
+
+def ml_predict(conn: sqlite3.Connection, news_id: int) -> int:
+    """有訓練好的模型時，同時建立並鎖定機器學習預測（radar/mlmodel.py）。
+
+    機器學習出錯（例如沒裝 scikit-learn 以外的問題、模型資料損壞）不能擋住字典預測：印出原因，回傳 0。"""
+    try:
+        from . import mlmodel
+        if not mlmodel.has_models(conn):
+            return 0
+        return mlmodel.create_for_news(conn, news_id)
+    except Exception as e:  # noqa: BLE001
+        print(f"機器學習預測失敗（新聞 id={news_id}）：{e}", file=sys.stderr)
+        return 0
 
 
 def predict_pending(conn: sqlite3.Connection, an: Analyzer | None = None) -> list[int]:

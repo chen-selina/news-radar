@@ -241,11 +241,11 @@ def test_backfilled_news_feed_the_comparison_but_not_the_site(conn):
                       ("2026-09-01", "1111", 100.0), ("2026-09-02", "1111", 106.0)])
     add_links(conn, ["https://a.example.com/1", "https://a.example.com/2"])
     pages = {"https://a.example.com/1": page("https://a.example.com/1", title="甲乙科技漲停", body="甲乙科技今天漲停。",
-                                             published="2026-09-01T15:00:00+08:00"),
+                                             published="2026-09-01T10:00:00+08:00"),
              "https://a.example.com/2": page("https://a.example.com/2", ok=False, title="", body="", reason="HTTP 404")}
     backfill.fetch_pending(conn, fetch=lambda u: pages[u], log=lambda m: None)
     rows = compare.predict_rows(conn, Lexicon({"漲停": 2.0}, {}), data="backfill")
-    assert [(r.code, r.pred, r.date, r.time) for r in rows] == [("1111", "up", "2026-09-01", "15:00")]
+    assert [(r.code, r.pred, r.date, r.time) for r in rows] == [("1111", "up", "2026-09-01", "10:00")]
     res = compare.compare(conn, Lexicon({"漲停": 2.0}, {}), data="backfill")
     one = next(r for r in res if r["variant"] == "手工詞典" and r["horizon"] == 1)
     assert one["n"] == 1 and one["hit_rate"] == 1.0

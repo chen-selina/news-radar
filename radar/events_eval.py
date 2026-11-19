@@ -23,14 +23,14 @@ import math
 import sqlite3
 import sys
 
-from . import db
+from . import db, targets
 from .analysis import lexicon
 from .analysis.engine import label_of, production_analyzer
 from .events import CATEGORIES
 from .momentum import fama_macbeth, past_returns
 from .significance import _p_two_sided, _stars, daily_spreads, newey_west
 from .stocks.query import all_stocks
-from .validate import HORIZONS, PRED, TAIEX, Row, _prices, _split_time, base_index, validate
+from .validate import HORIZONS, PRED, TAIEX, Row, _prices, _split_time, validate
 
 MIN_DAYS = 30   # 交易日太少就不做大盤的檢定
 
@@ -117,7 +117,7 @@ def run(conn: sqlite3.Connection, lex: lexicon.Lexicon) -> dict:
     for n in conn.execute("SELECT id, category, title, body, url, published_at FROM events_news ORDER BY id"):
         d, t = _split_time(n["published_at"])
         a = an.analyze(n["title"], n["body"])
-        bi = base_index(days, d, t)
+        bi = targets.entry_index(days, d, t)
         new_rows = [Row(n["id"], d, t, n["title"], n["url"], "events", None, v.stock.code, v.stock.name, v.type,
                         v.sector, v.score, PRED[label_of(v.score)]) for v in a.impacts]
         for g, cats in groups.items():

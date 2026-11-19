@@ -69,8 +69,8 @@ def conn():
     c.executemany("INSERT INTO stocks (code, name, market, updated_at) VALUES (?, ?, '上市', 'now')",
                   [("1111", "甲乙科技"), ("2222", "丙丁電子")])
     c.executemany("INSERT INTO news (url, source, title, body, published_at, fetched_at) VALUES (?, 'udn', ?, ?, ?, 'now')",
-                  [("https://a.com/1", "甲乙科技漲停", "甲乙科技今天漲停。", "2026-10-20T15:00:00+08:00"),
-                   ("https://a.com/2", "丙丁電子出現虧損", "丙丁電子上季虧損。", "2026-10-20T15:00:00+08:00")])
+                  [("https://a.com/1", "甲乙科技漲停", "甲乙科技今天漲停。", "2026-10-20T10:00:00+08:00"),
+                   ("https://a.com/2", "丙丁電子出現虧損", "丙丁電子上季虧損。", "2026-10-20T10:00:00+08:00")])
     c.commit()
     return c
 

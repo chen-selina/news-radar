@@ -28,7 +28,7 @@ import sqlite3
 import statistics
 import sys
 
-from . import db
+from . import db, metrics, targets
 from .analysis import lexicon, remi
 from .significance import _stars, newey_west
 from .train import Sample, build_samples, label
@@ -67,22 +67,25 @@ def predict(samples: list[Sample], score: str, rule: str) -> list[str]:
 
 
 def evaluate(samples: list[Sample], preds: list[str], horizon: int, threshold: float = 0.01) -> dict:
-    """命中率、同一批樣本「全部猜跌／全部猜漲」的命中率、多空報酬差與檢定。samples 要先用 label() 填好報酬。"""
+    """命中率、同一批樣本「全部猜跌／全部猜漲」的命中率、多空報酬差與檢定。samples 要先用 label() 填好報酬。
+
+    命中率與基準由 radar/metrics.py 計算（和 radar/validate.py、radar/train.py 同一套），完整指標在 "metrics"。
+    """
     done = [(s, p) for s, p in zip(samples, preds) if p != "flat" and s.ex is not None]
-    act = lambda s: "up" if s.ex > threshold else "down" if s.ex < -threshold else "flat"
+    act = lambda s: targets.direction(s.ex, threshold)
+    m = metrics.report(list(preds), [act(s) for s in samples],
+                       [None if s.ex is not None else (s.status or "no_label") for s in samples])
     ups, downs = [s.ex for s, p in done if p == "up"], [s.ex for s, p in done if p == "down"]
     by_day: dict[str, dict[str, list[float]]] = {}
     for s, p in done:
         by_day.setdefault(s.day, {"up": [], "down": []})[p].append(s.ex)
     daily = [sum(g["up"]) / len(g["up"]) - sum(g["down"]) / len(g["down"])
              for _, g in sorted(by_day.items()) if g["up"] and g["down"]]
-    n = len(done)
-    share = lambda a: sum(act(s) == a for s, _ in done) / n if n else None
     avg = lambda v: sum(v) / len(v) if v else None
-    return {"n": n, "up_n": len(ups), "down_n": len(downs),
-            "hit_rate": sum(p == act(s) for s, p in done) / n if n else None,
-            "all_down": share("down"), "all_up": share("up"),
-            "up_avg": avg(ups), "down_avg": avg(downs), "test": newey_west(daily, horizon - 1)}
+    b = m["baselines"]
+    return {"n": m["n_signal"], "up_n": len(ups), "down_n": len(downs), "hit_rate": m["hit_rate"],
+            "all_down": b["always_down"]["hit_rate_on_signals"], "all_up": b["always_up"]["hit_rate_on_signals"],
+            "up_avg": avg(ups), "down_avg": avg(downs), "test": newey_west(daily, horizon - 1), "metrics": m}
 
 
 def run(conn: sqlite3.Connection, base: lexicon.Lexicon, data: str = "backfill", benchmark: str = "excess") -> list[dict]:

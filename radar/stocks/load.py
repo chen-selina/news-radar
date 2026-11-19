@@ -22,6 +22,8 @@ from . import sources
 OVERRIDES_PATH = config.CONFIG_DIR / "stock_overrides.json"
 MIN_COMPANIES = {"上市": 500, "上櫃": 400}  # 少於這個數字代表官方資料不完整，不覆蓋資料庫
 _SUFFIX = re.compile(r"(-KY|-DR|\*)$")
+_BOARD = re.compile(r"(?:-創|(?<=-KY)創)$")   # 創新板：「永悅健康-創」「錼創科技-KY創」
+_KY = re.compile(r"(-KY|-DR)$")
 
 
 def load_overrides(path: Path = OVERRIDES_PATH) -> dict[str, dict]:
@@ -30,9 +32,24 @@ def load_overrides(path: Path = OVERRIDES_PATH) -> dict[str, dict]:
 
 
 def auto_aliases(name: str) -> list[str]:
-    """「臻鼎-KY」→「臻鼎」、「華義*」→「華義」：新聞通常不會寫後綴。"""
+    """新聞通常不會寫後綴：「臻鼎-KY」→「臻鼎」、「華義*」→「華義」。
+
+    後綴疊在一起的（「*」「創新板 -創」加上「-KY」）另外產生：
+    - 拿掉「*」與「創」、保留 -KY 的寫法：「矽力*-KY」→「矽力-KY」、「錼創科技-KY創」→「錼創科技-KY」
+    - 全部拿掉、而且還有三個字以上的：「錼創科技」「永悅健康」「成信實業」「沛爾生醫」
+    全部拿掉只剩兩個字的不產生：「材料*-KY」→「材料」會把「電子材料」當成公司。
+    """
+    out = []
     short = _SUFFIX.sub("", name)
-    return [short] if short != name and len(short) >= 2 else []
+    if short != name and len(short) >= 2:
+        out.append(short)
+    base = _BOARD.sub("", name).replace("*", "")
+    if base != name and len(base) >= 2:
+        out.append(base)
+    full = _KY.sub("", base)
+    if full != base and full != name and len(full) >= 3:
+        out.append(full)
+    return list(dict.fromkeys(out))
 
 
 def build_rows(raw: dict[str, list[dict]], overrides: dict[str, dict],

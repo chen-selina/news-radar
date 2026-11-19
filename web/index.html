@@ -36,10 +36,11 @@
     <div class="grid">
       <div>
         <div class="toolbar">
+          <label class="mlh" title="機器學習每個觀察期間各有一個模型；切換後列表上的判斷跟著換">機器學習期間<span class="seg" id="mlH"><button data-v="1" aria-pressed="false">隔日</button><button data-v="3" aria-pressed="false">3 日</button><button data-v="5" aria-pressed="false">5 日</button><button data-v="10" aria-pressed="true">10 日</button></span></label>
           <button class="chip" data-f="all" aria-pressed="true">全部</button>
-          <button class="chip" data-f="pos" aria-pressed="false">利多</button>
-          <button class="chip" data-f="neg" aria-pressed="false">利空</button>
-          <button class="chip" data-f="neu" aria-pressed="false">中性</button>
+          <button class="chip" data-f="pos" aria-pressed="false" title="依字典規則篩選">字典利多</button>
+          <button class="chip" data-f="neg" aria-pressed="false" title="依字典規則篩選">字典利空</button>
+          <button class="chip" data-f="neu" aria-pressed="false" title="依字典規則篩選">字典中性</button>
           <select id="period" aria-label="期間"><option value="1">今天</option><option value="3">近 3 天</option><option value="7" selected>近 7 天</option><option value="30">近 30 天</option><option value="">全部期間</option></select>
           <select id="srcSel" aria-label="新聞來源"><option value="">全部來源</option></select>
           <input type="search" id="q" placeholder="搜尋標題、內文、公司或代號">
@@ -55,8 +56,8 @@
           <div class="distnums" id="distnums"></div>
         </div>
         <div class="panel">
-          <h2>個股影響排行</h2>
-          <div class="note">分數＝期間內相關新聞的情緒分數加總（以鎖定的預測計算）。點選個股可篩選新聞。</div>
+          <h2>個股影響排行（依字典）</h2>
+          <div class="note">分數＝期間內相關新聞的字典情緒分數加總（以鎖定的預測計算）。點選個股可篩選新聞。情緒分布與這個排行目前仍依字典規則。</div>
           <div class="rank-h up">偏多</div>
           <ul class="rank" id="rankUp"></ul>
           <div class="rank-h down">偏空</div>
@@ -112,12 +113,13 @@
 
   <section id="tab-val" hidden>
     <div class="panel vctrl">
-      <label>預測<select id="vLex"><option value="">原始預測（鎖定）</option></select></label>
+      <label>預測<select id="vLex"><option value="">字典（鎖定）</option></select></label>
       <label>觀察期間<span class="seg" id="vH"><button data-v="1" aria-pressed="false">隔日</button><button data-v="3" aria-pressed="true">3 日</button><button data-v="5" aria-pressed="false">5 日</button><button data-v="10" aria-pressed="false">10 日</button></span></label>
       <label>比較基準<span class="seg" id="vB"><button data-v="excess" aria-pressed="true">扣除大盤</button><button data-v="raw" aria-pressed="false">個股漲跌</button></span></label>
       <label>個股範圍<span class="seg" id="vS"><button data-v="all" aria-pressed="true">含產業連動</button><button data-v="direct" aria-pressed="false">只看直接提及</button></span></label>
       <label>計算單位<span class="seg" id="vD"><button data-v="" aria-pressed="true" title="每則新聞的每檔個股各算一筆">每則新聞</button><button data-v="1" aria-pressed="false" title="一檔個股、一個交易日只算一筆；同一事件的多篇報導不重複計算">每檔每日</button></span></label>
       <label for="vThr">「持平」門檻 ±%<input type="number" id="vThr" value="1" min="0" max="10" step="0.5" style="width:90px"></label>
+      <button class="btn ghost" id="vMlRecalc" title="用最新的機器學習模型重新預測所有新聞，另存成重算結果，不改原始預測">用最新模型重算</button>
       <button class="btn ghost" id="vRecalc" title="用目前的詞典重新分析所有新聞，另存成重算結果，不改原始預測">用目前詞典重算</button>
     </div>
     <div class="warnbar" id="vWarn"></div>

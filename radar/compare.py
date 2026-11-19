@@ -19,7 +19,7 @@ import argparse
 import sqlite3
 import sys
 
-from . import backfill, db
+from . import backfill, db, targets
 from .analysis import lexicon, remi
 from .analysis.engine import label_of, production_analyzer
 from .stocks.query import all_stocks
@@ -34,12 +34,20 @@ def lexicons(base: lexicon.Lexicon) -> dict[str, lexicon.Lexicon]:
 
 NEWS_SQL = {
     # 網站平常收錄的新聞
-    "live": "SELECT id, title, body, url, source, via_outlet, COALESCE(published_at, fetched_at) AS t FROM news ORDER BY id",
+    # avail＝系統第一次看到的時間（發布與抓取取較晚的）；回補新聞是歷史重建，假設發布當下就讀得到
+    "live": "SELECT id, title, body, url, source, via_outlet, COALESCE(published_at, fetched_at) AS t, "
+            "fetched_at AS fetched FROM news ORDER BY id",
     # 回補的歷史新聞（radar/backfill.py）：只用讀到內文的。標題用查網址時拿到的（有些網站的網頁標題其實是分類名稱）
     "backfill": "SELECT id, CASE WHEN list_title != '' THEN list_title ELSE title END AS title, body, url, "
-                "'backfill' AS source, outlet AS via_outlet, COALESCE(published_at, listed_at) AS t "
+                "'backfill' AS source, outlet AS via_outlet, COALESCE(published_at, listed_at) AS t, "
+                "NULL AS fetched "
                 "FROM backfill_news WHERE status = 'ok' ORDER BY id",
 }
+
+
+def available_at(n) -> tuple[str, str]:
+    """資訊可取得的（台北日期, HH:MM）。網站收錄的：發布與抓取取較晚的；回補的（fetched 為 NULL）：發布時間。"""
+    return targets.available_at(n["t"], n["fetched"])
 
 
 def predict_rows(conn: sqlite3.Connection, lex: lexicon.Lexicon, data: str = "live") -> list[Row]:
@@ -48,12 +56,14 @@ def predict_rows(conn: sqlite3.Connection, lex: lexicon.Lexicon, data: str = "li
     out = []
     for n in conn.execute(NEWS_SQL[data]):
         d, t = _split_time(n["t"])
+        ad, at = available_at(n)
         body = n["body"] or ""
         if data == "backfill":
             body = backfill.clean_body(body)   # 去掉內文後面夾帶的其他新聞標題與廣告
         for v in an.analyze(n["title"], body).impacts:
             out.append(Row(n["id"], d, t, n["title"], n["url"], n["source"], n["via_outlet"], v.stock.code,
-                           v.stock.name, v.type, v.sector, v.score, PRED[label_of(v.score)]))
+                           v.stock.name, v.type, v.sector, v.score, PRED[label_of(v.score)], avail_date=ad or None,
+                           avail_time=at))
     return out
 
 

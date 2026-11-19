@@ -13,6 +13,7 @@
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 
 from .lexicon import Lexicon
@@ -29,6 +30,11 @@ TITLE_WEIGHT = BOOST_WEIGHT = 1.5
 SECTOR_SHARE = 0.5   # 產業連動取一半分數
 SECTOR_MIN = 0.5     # 產業連動分數絕對值低於此值就不列出
 SECTOR_MAX_STOCKS = 4   # 原型：每個族群最多幾檔
+VARIANTS = str.maketrans("臺", "台")   # 比對前統一的異體字（一對一，位置不變）
+# 名稱後面括號裡的四位數代號；括號前一個字要是中文或英文字母（「網路家庭（8044）」「世芯-KY（3661）」），
+# 避免西元年份：前面是數字、「年」（115年（2027））、「去／今／明／前／後」（去（2025）年），或後面接「年」
+CODE_IN_PARENS = re.compile(r"(?<=[一-鿿A-Za-z*])(?<![年月日去今明前後])\s?[（(]\s*(\d{4})(?:\s*-\s*TWO?)?\s*[)）]"
+                            r"(?!\s*[年度])")
 LABELS = {"pos": "利多", "neg": "利空", "neu": "中性"}
 
 
@@ -150,7 +156,14 @@ class Analyzer:
     def __init__(self, lexicon: Lexicon, stocks: list[Stock], name_rules: NameRules | None = None,
                  sector_fallback: str = "total", repeat_decay: float = 1.0,
                  direct_scope: str = "sentence", direct_fallback: str = "total",
-                 sector_max: int | None = SECTOR_MAX_STOCKS):
+                 sector_max: int | None = SECTOR_MAX_STOCKS, variants: bool = False, code_mentions: bool = False):
+        """variants：比對前把異體字統一（「臺」→「台」），「臺達電」才對得到台達電。
+        code_mentions：「名稱（代號）」裡的名稱沒對到任何公司時（媒體寫錯字或用全名，例如「網路家庭（8044）」
+        「台耀（6274）」），用括號裡的代號認公司。名稱已經對到某家公司的不再用代號（避免「台積電（2365）」這種
+        代號誤植反而多抓一家）。兩個都是原型之後加的修正，只在 production_analyzer 開啟。"""
+        self.variants = variants
+        self.code_mentions = code_mentions
+        self.by_code = {s.code: s for s in stocks}
         if sector_fallback not in ("total", "title"):
             raise ValueError("sector_fallback 只能是 total 或 title")
         if direct_scope not in ("sentence", "segment"):
@@ -181,16 +194,21 @@ class Analyzer:
             self.entries.append(Match(0, 0, t, "sector", sector=sec))
 
     def find_matches(self, text: str) -> list[Match]:
+        if self.variants:   # 一對一替換，位置不變
+            text = text.translate(VARIANTS)
         found: list[Match] = []
         for en in self.entries:
             if not en.term:
                 continue
-            i = text.find(en.term)
+            term = en.term.translate(VARIANTS) if self.variants else en.term
+            i = text.find(term)
             while i != -1:
-                found.append(Match(i, i + len(en.term), en.term, en.kind, en.weight, en.stock, en.sector))
-                i = text.find(en.term, i + 1)
+                found.append(Match(i, i + len(term), en.term, en.kind, en.weight, en.stock, en.sector))
+                i = text.find(term, i + 1)
         if self.name_rules is not None:  # 先拿掉沒有佐證的公司短名稱，讓出位置給其他詞
             found = self.name_rules.filter(text, found)
+        if self.code_mentions:
+            found += self._code_mentions(text, found)
         # 長的優先，同長取前面的；sorted 是穩定排序，同長同位置時保留詞條順序（同原型）
         found.sort(key=lambda m: (-(m.end - m.start), m.start))
         keep: list[Match] = []
@@ -198,6 +216,19 @@ class Analyzer:
             if not any(f.start < k.end and k.start < f.end for k in keep):
                 keep.append(f)
         return sorted(keep, key=lambda m: m.start)
+
+    def _code_mentions(self, text: str, found: list[Match]) -> list[Match]:
+        """「某某（8044）」「某某(6274-TW)」：括號前面沒有對到公司名稱時，用代號認公司。"""
+        out = []
+        for m in CODE_IN_PARENS.finditer(text):
+            s = self.by_code.get(m.group(1))
+            if s is None or any(f.stock is s for f in found):   # 這家已經用名稱對到了，不必重複
+                continue
+            p = m.start()
+            if any(f.kind == "stock" and p - 2 <= f.end <= p for f in found):   # 名稱已經對到（可能是別家：代號誤植）
+                continue
+            out.append(Match(m.start(1), m.end(1), m.group(1), "stock", stock=s))
+        return out
 
     def _decayed(self, ms: list[Match]) -> list[float]:
         """每個情緒詞實際貢獻的分數：同一個詞重複出現時，由分數絕對值大的開始依序遞減。"""
@@ -349,4 +380,5 @@ def _reason(v: Impact, text: str, sents: list[tuple[int, int]]) -> str:
 def production_analyzer(lexicon: Lexicon, stocks: list[Stock]) -> Analyzer:
     """正式流程（爬蟲建立預測、命令列分析）用的分析器：開啟所有原型之後加入的修正。"""
     return Analyzer(lexicon, stocks, NameRules.load(), sector_fallback="title",
-                    repeat_decay=0.5, direct_scope="segment", direct_fallback="title", sector_max=None)
+                    repeat_decay=0.5, direct_scope="segment", direct_fallback="title", sector_max=None,
+                    variants=True, code_mentions=True)

@@ -21,7 +21,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from .. import config, db, jobs, predict
+from .. import config, db, jobs, mlmodel, predict
 from ..analysis import lexicon
 from ..analysis.engine import LABELS, Analyzer, production_analyzer, strength
 from ..crawl import run as crawl_run
@@ -83,6 +83,31 @@ def _stock_dict(r: sqlite3.Row) -> dict:
             "strength": strength(r["score"]), "type": r["type"], "sector": r["sector"], "reason": r["reason"]}
 
 
+def _ml_items(conn: sqlite3.Connection, ids: list[int]) -> dict[int, dict[int, list[dict]]]:
+    """{新聞 id: {期間: [個股的機器學習預測]}}。有鎖定的原始預測就用它；沒有的新聞用最新版模型的重算結果，標成 recalc。"""
+    marks = ",".join("?" * len(ids))
+    out: dict[int, dict[int, list[dict]]] = {}
+
+    def add(r, recalc: bool):
+        out.setdefault(r["news_id"], {}).setdefault(r["horizon"], []).append({
+            "code": r["stock_code"], "name": r["name"], "label": (lab := mlmodel.decide(r["p_up"], r["p_down"])),
+            "label_text": LABELS[lab], "raw_label": r["label"],
+            "p_up": r["p_up"], "p_flat": r["p_flat"], "p_down": r["p_down"], "model_version": r["model_version"],
+            "created_at": r["created_at"], "features": json.loads(r["features_json"]), "recalc": recalc})
+
+    sel = ("SELECT m.*, COALESCE(st.name, m.stock_code) AS name FROM {t} m LEFT JOIN stocks st ON st.code = m.stock_code "
+           "WHERE m.news_id IN ({marks}){extra} ORDER BY m.news_id, m.horizon, abs(m.p_up - m.p_down) DESC")
+    for r in conn.execute(sel.format(t="ml_predictions", marks=marks, extra=""), ids):
+        add(r, False)
+    rest = [i for i in ids if i not in out]
+    latest = conn.execute("SELECT MAX(model_version) FROM ml_recalcs").fetchone()[0]
+    if rest and latest is not None:
+        m2 = ",".join("?" * len(rest))
+        for r in conn.execute(sel.format(t="ml_recalcs", marks=m2, extra=" AND m.model_version = ?"), [*rest, latest]):
+            add(r, True)
+    return out
+
+
 def _news_items(conn: sqlite3.Connection, rows: list[sqlite3.Row]) -> list[dict]:
     """新聞列加上鎖定的原始預測（含個股）。"""
     ids = [r["id"] for r in rows]
@@ -97,6 +122,7 @@ def _news_items(conn: sqlite3.Connection, rows: list[sqlite3.Row]) -> list[dict]
             f"WHERE ps.prediction_id IN (SELECT id FROM predictions WHERE news_id IN ({marks})) "
             f"ORDER BY ps.prediction_id, ps.type, abs(ps.score) DESC", ids):
         stocks.setdefault(s["prediction_id"], []).append(_stock_dict(s))
+    ml = _ml_items(conn, ids)
     out = []
     for r in rows:
         p = preds.get(r["id"])
@@ -109,6 +135,7 @@ def _news_items(conn: sqlite3.Connection, rows: list[sqlite3.Row]) -> list[dict]
                 "id": p["id"], "lexicon_version": p["lexicon_version"], "created_at": p["created_at"],
                 "total": p["total_score"], "label": p["label"], "label_text": LABELS[p["label"]],
                 "strength": strength(p["total_score"]), "stocks": stocks.get(p["id"], [])},
+            "ml": {str(h): v for h, v in ml.get(r["id"], {}).items()},
         })
     return out
 
@@ -178,6 +205,10 @@ def create_app(db_path: Path | str | None = None, lexicon_path: Path = lexicon.L
             "last_job": (dict(r) if (r := conn.execute(
                 "SELECT started_at, finished_at, status, summary FROM job_runs ORDER BY id DESC LIMIT 1").fetchone()) else None),
             "recalc_versions": [r[0] for r in conn.execute("SELECT DISTINCT lexicon_version FROM recalcs ORDER BY 1 DESC")],
+            "ml": {"models": mlmodel.summary(conn),
+                   "recalc_versions": [r[0] for r in conn.execute(
+                       "SELECT DISTINCT model_version FROM ml_recalcs ORDER BY 1 DESC")],
+                   "locked": one("SELECT COUNT(DISTINCT news_id) FROM ml_predictions"), "margin": mlmodel.MARGIN},
         }
 
     # ----- 新聞 -----
@@ -294,7 +325,8 @@ def create_app(db_path: Path | str | None = None, lexicon_path: Path = lexicon.L
         if not data.title.strip() and not data.body.strip():
             raise _bad("請輸入標題或內文")
         an = analyzer(conn)
-        return {"lexicon_version": an.lexicon.version, **an.analyze(data.title.strip(), data.body.strip()).to_dict()}
+        return {"lexicon_version": an.lexicon.version, **an.analyze(data.title.strip(), data.body.strip()).to_dict(),
+                "ml": mlmodel.preview(conn, data.title.strip(), data.body.strip())}
 
     @app.post("/api/analyze-url", summary="讀取網址、擷取標題與內文後分析（不存檔）")
     def analyze_url(data: UrlIn, conn: sqlite3.Connection = Conn):
@@ -307,7 +339,7 @@ def create_app(db_path: Path | str | None = None, lexicon_path: Path = lexicon.L
         if f.ok:
             an = analyzer(conn)
             out["lexicon_version"] = an.lexicon.version
-            out["analysis"] = an.analyze(f.title, f.body).to_dict()
+            out["analysis"] = {**an.analyze(f.title, f.body).to_dict(), "ml": mlmodel.preview(conn, f.title, f.body)}
         return out
 
     # ----- 驗證 -----
@@ -316,13 +348,22 @@ def create_app(db_path: Path | str | None = None, lexicon_path: Path = lexicon.L
     def validation(horizon: int = Query(3, ge=1, le=60), benchmark: str = Query("excess", pattern="^(excess|raw)$"),
                    threshold: float = Query(0.01, ge=0, le=0.5), scope: str = Query("all", pattern="^(all|direct)$"),
                    lexicon_version: int | None = Query(None, description="給版本號就驗證該版的重算結果"),
+                   predictor: str = Query("ml", pattern="^(ml|lexicon)$",
+                                          description="ml＝機器學習預測（主要）；lexicon＝字典規則的預測（對照）"),
+                   ml_version: int | None = Query(None, description="給版本號就驗證該版模型的重算結果"),
                    dedupe: bool = Query(False, description="一檔個股、一個交易日只算一筆（同事件的多篇報導不重複計算）"),
                    conn: sqlite3.Connection = Conn):
         if lexicon_version is not None and not conn.execute(
                 "SELECT 1 FROM recalcs WHERE lexicon_version = ? LIMIT 1", (lexicon_version,)).fetchone():
             raise _bad(f"第 {lexicon_version} 版詞典還沒有重算結果，請先執行重算", 404)
+        if lexicon_version is not None:
+            predictor = "lexicon"          # 指定詞典版本＝看字典的重算結果
+        if predictor == "ml" and ml_version is not None and not conn.execute(
+                "SELECT 1 FROM ml_recalcs WHERE model_version = ? LIMIT 1", (ml_version,)).fetchone():
+            raise _bad(f"第 {ml_version} 版模型還沒有重算結果，請先執行重算", 404)
         try:
-            return validate(conn, horizon, benchmark, threshold, scope, lexicon_version, dedupe=dedupe)
+            return validate(conn, horizon, benchmark, threshold, scope, lexicon_version, dedupe=dedupe,
+                            predictor=predictor, ml_version=ml_version)
         except ValueError as e:
             raise _bad(str(e)) from None
 
@@ -330,6 +371,14 @@ def create_app(db_path: Path | str | None = None, lexicon_path: Path = lexicon.L
     def recalc(conn: sqlite3.Connection = Conn):
         an = analyzer(conn)
         return {"lexicon_version": an.lexicon.version, "count": predict.recalculate(conn, an)}
+
+    @app.post("/api/ml/recalc", summary="用最新的機器學習模型重算所有新聞（另存，不改原始預測）")
+    def ml_recalc(conn: sqlite3.Connection = Conn):
+        try:
+            n = mlmodel.recalc(conn, log=lambda _: None)
+        except RuntimeError as e:
+            raise _bad(str(e), 404) from None
+        return {"model_version": conn.execute("SELECT MAX(model_version) FROM ml_recalcs").fetchone()[0], "count": n}
 
     # ----- 詞典 -----
 

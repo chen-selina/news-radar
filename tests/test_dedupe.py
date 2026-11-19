@@ -75,7 +75,7 @@ def test_collapse_counts_one_event_once_and_averages_events():
 
 def test_collapse_prefers_direct_over_sector_and_splits_by_base_day():
     rows = [row(1, "甲公司營收創新高", 2.0), row(2, "記憶體報價下跌", -3.0, typ="sector"),
-            row(3, "甲公司法說會前夕", 2.0, time="08:00"),          # 開盤前：基準日是 11/09
+            row(3, "甲公司法說會前夕", 2.0, time="08:00"),          # 13:00 前：基準日是當天；20:00 的是下一個交易日
             row(4, "乙公司接獲大單", 2.0, code="2222")]
     out = {(r.code, r.time): r for r in collapse(rows, DAYS)}
     assert len(out) == 3
@@ -88,7 +88,7 @@ def test_validate_dedupe_reduces_rows(tmp_path):
     c.executemany("INSERT INTO trading_days (date) VALUES (?)", [(d,) for d in DAYS])
     c.executemany("INSERT INTO prices (date, code, close) VALUES (?, ?, ?)",
                   [(d, "TAIEX", 100.0) for d in DAYS] + [(d, "1111", p) for d, p in zip(DAYS, (100, 100, 105))])
-    rows = [row(i, f"甲公司董事會決議每股配息9元創新高{'！' * i}", 2.0) for i in range(1, 6)]
+    rows = [row(i, f"甲公司董事會決議每股配息9元創新高{'！' * i}", 2.0, time="10:00") for i in range(1, 6)]
     plain = validate(c, horizon=1, rows=[Row(**vars(r)) for r in rows])
     one = validate(c, horizon=1, rows=[Row(**vars(r)) for r in rows], dedupe=True)
     assert plain["summary"]["n"] == 5 and one["summary"]["n"] == 1

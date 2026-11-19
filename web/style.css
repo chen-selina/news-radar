@@ -180,3 +180,12 @@ table.vt .ttl{max-width:300px}
 .vers b{font-family:var(--f-mono);color:var(--ink);font-weight:500;margin-right:6px}
 .banner{font-size:13px;border-radius:6px;padding:10px 12px;margin-top:12px;background:var(--hl);color:var(--ink)}
 article.news h2{font-size:13px;letter-spacing:.08em;color:var(--muted);font-weight:700}
+
+/* 機器學習（2026-11-20） */
+.mlh{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.mlh .seg button{padding:4px 9px}
+.stag .prob{font-size:11px;color:var(--muted)}
+.badge{font-size:11px;border:1px solid var(--line);border-radius:3px;padding:0 5px;color:var(--muted)}
+.dict{font-size:12px;color:var(--muted)}
+.mltbl{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+.mltbl td,.mltbl th{padding:3px 6px;border-bottom:1px solid var(--line);text-align:left}

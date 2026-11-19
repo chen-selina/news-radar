@@ -12,5 +12,15 @@ def all_stocks(conn: sqlite3.Connection) -> list[Stock]:
     rows = conn.execute(
         "SELECT code, name, aliases, sectors, market_cap FROM stocks "
         "ORDER BY market_cap IS NULL, market_cap DESC, code").fetchall()
-    return [Stock(r["code"], r["name"], tuple(json.loads(r["aliases"])), tuple(json.loads(r["sectors"])),
-                  r["market_cap"]) for r in rows]
+    from .load import auto_aliases, load_overrides   # 讀取時再補一次：改了後綴規則或人工別名，不必重新載入公司清單
+    try:
+        ov = load_overrides()
+    except (OSError, ValueError):
+        ov = {}
+    out = []
+    for r in rows:
+        aliases = dict.fromkeys([*json.loads(r["aliases"]), *auto_aliases(r["name"]),
+                                 *ov.get(r["code"], {}).get("aliases", [])])
+        aliases.pop(r["name"], None)
+        out.append(Stock(r["code"], r["name"], tuple(aliases), tuple(json.loads(r["sectors"])), r["market_cap"]))
+    return out

@@ -61,7 +61,7 @@ const srcLabel = n => (n.source_name || "未知來源") + (n.via_outlet ? `・�
 const linkTitle = (url, inner) => isUrl(url) ? `<a class="orig" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${inner}</a>` : inner;
 
 // ---------- 最新新聞 ----------
-const feed = {label: "", source: "", q: "", stock: null, stockName: "", period: "7", items: [], total: 0, fresh: new Set()};
+const feed = {label: "", source: "", q: "", stock: null, stockName: "", period: "7", items: [], total: 0, fresh: new Set(), mlH: "10"};
 const PAGE = 30;
 
 function sinceDate() {
@@ -93,11 +93,50 @@ async function loadFeed(append = false) {
   } catch (e) { showApiError(e); }
 }
 
+// ---------- 機器學習（主要預測；字典規則是對照） ----------
+const hasML = () => !!(META && META.ml && META.ml.models.length);
+const mlModel = h => hasML() ? META.ml.models.find(m => m.horizon === +h && m.version === META.ml.models[0].version) : null;
+// 一則新聞的整體判斷：直接提及個股的多數方向（平手＝中性）
+function mlMajority(list) {
+  const up = list.filter(m => m.label === "pos").length, down = list.filter(m => m.label === "neg").length;
+  return up > down ? "pos" : down > up ? "neg" : "neu";
+}
+const mlArrow = l => l === "pos" ? "▲" : l === "neg" ? "▼" : "–";
+const mlCls = l => l === "pos" ? "up" : l === "neg" ? "down" : "flat";
+// 判斷門檻：上漲機率 − 下跌機率要達到門檻才算利多／利空（radar/mlmodel.py 的 MARGIN）
+const marginNote = () => hasML() ? `上漲與下跌機率相差不到 ${Math.round((META.ml.margin ?? 0.05) * 100)} 個百分點時判為中性。` : "";
+function mlEvalLine(h) {
+  const m = mlModel(h), e = m && m.eval;
+  if (!e) return "";
+  return `模型第 ${m.version} 版（第 ${h} 日）樣本外：IC ${e.ic >= 0 ? "+" : ""}${e.ic.toFixed(3)}、balanced accuracy ${fr(e.balanced_accuracy)}（亂猜 33%）、命中率 ${fr(e.hit_rate)}（全猜跌 ${fr(e.all_down_hit_rate)}）、扣完整成本後報酬差 ${pct(e.net["0.00585"], 2)}。`;
+}
+function mlWhyHTML(list, h) {
+  if (!list.length) return `<div class="note">機器學習：這則新聞沒有「直接提及、而且有情緒詞」的個股，模型不預測（產業連動的個股不預測）。</div>`;
+  const recalc = list.some(m => m.recalc);
+  return `<h4 style="margin:10px 0 2px">機器學習判斷（第 ${h} 日）</h4>
+    <table class="mltbl"><tr><th>個股</th><th>判斷</th><th>上漲／持平／下跌機率</th><th>正面詞・負面詞・當日報導</th></tr>${list.map(m =>
+      `<tr><td>${esc(m.name)} <span class="code">${esc(m.code)}</span></td><td class="${mlCls(m.label)}">${mlArrow(m.label)} ${m.label_text}</td><td>${fr(m.p_up)}／${fr(m.p_flat)}／${fr(m.p_down)}</td><td>${m.features.pos.toFixed(1)}・${m.features.neg.toFixed(1)}・${m.features.news} 則</td></tr>`).join("")}</table>
+    <div class="note" style="margin-top:4px">${recalc ? `<b>重算結果</b>：這則新聞收錄時還沒有模型，這是之後用模型第 ${list[0].model_version} 版重算的，不是當時鎖定的預測。`
+      : `預測建立於 ${when(list[0].created_at)}，模型第 ${list[0].model_version} 版，已鎖定。`} 模型只看新聞（正負詞數、加總分數、報導量），三分類邏輯迴歸。${marginNote()}${mlEvalLine(h)}</div>`;
+}
+
+function mlPreviewHTML(list) {
+  if (!list.length) return `<div class="note">沒有「直接提及、而且有情緒詞」的個股，模型不預測。</div>`;
+  return `<table class="mltbl"><tr><th>個股</th><th>判斷</th><th>上漲／持平／下跌機率</th></tr>${list.map(m =>
+    `<tr><td>${esc(m.name)} <span class="code">${esc(m.code)}</span></td><td class="${mlCls(m.label)}">${mlArrow(m.label)} ${LABEL[m.label]}</td><td>${fr(m.p_up)}／${fr(m.p_flat)}／${fr(m.p_down)}</td></tr>`).join("")}</table>
+    <div class="note" style="margin-top:4px">報導量以 1 則計算；加入新聞列表後，才會依當天實際報導量建立並鎖定預測。${marginNote()}${mlEvalLine(feed.mlH)}</div>`;
+}
+
 function newsHTML(it) {
   const p = it.prediction, hl = it.highlight, tl = it.title.length;
-  const label = p ? p.label : "neu";
-  const meta = p
-    ? `<span class="pill ${label}">${LABEL[label]}</span><span class="score ${cls(p.total)}">${fmt(p.total)}</span><span>影響程度 ${strength(p.total)}</span>`
+  const ml = (it.ml && it.ml[feed.mlH]) || [];
+  const useML = hasML() && ml.length > 0;
+  const label = useML ? mlMajority(ml) : hasML() ? "neu" : p ? p.label : "neu";
+  const dict = p ? `<span class="dict" title="字典規則（對照）">字典 ${LABEL[p.label]} ${fmt(p.total)}</span>` : "";
+  const meta = hasML()
+    ? (useML ? `<span class="pill ${label}">${LABEL[label]}</span><span>機器學習・${feed.mlH} 日</span>${ml.some(m => m.recalc) ? `<span class="badge" title="收錄時還沒有模型，這是之後重算的">重算</span>` : ""}`
+             : `<span class="pill neu">無機器學習判斷</span>`) + dict
+    : p ? `<span class="pill ${label}">${LABEL[label]}</span><span class="score ${cls(p.total)}">${fmt(p.total)}</span><span>影響程度 ${strength(p.total)}</span>`
     : `<span class="pill neu">尚未分析</span>`;
   const partial = it.body_from === "summary" ? `<span title="讀不到全文，只用網頁摘要分析">只有摘要</span>` :
                   it.body_from === "title" ? `<span title="讀不到內文，只用標題分析">只有標題</span>` : "";
@@ -108,9 +147,12 @@ function newsHTML(it) {
     <h3>${linkTitle(it.url, highlight(it.title, 0, hl))}</h3>
     <p class="text">${highlight(body, tl + 1, hl, PREVIEW)}</p>
     ${body.length > PREVIEW ? `<details class="fulltext"><summary>展開全文擷取（${body.length} 字）</summary><p class="text">${highlight(body, tl + 1, hl)}</p></details>` : ""}
-    <div class="tags">${stocks.slice(0, 6).map(v => `<span class="stag"><span class="${cls(v.score)}">${v.score > 0 ? "▲" : v.score < 0 ? "▼" : "–"}</span>${esc(v.name)}<span class="code">${esc(v.code)}</span></span>`).join("")}</div>
-    ${p ? `<details class="why"><summary>為什麼這樣判斷</summary>${impactsHTML(stocks)}<div class="hits">${hitsHTML(hl)}</div>
-      <div class="note" style="margin-top:6px">預測建立於 ${when(p.created_at)}，使用詞典第 ${p.lexicon_version} 版，已鎖定。</div></details>` : ""}
+    <div class="tags">${useML
+      ? ml.slice(0, 6).map(m => `<span class="stag" title="上漲 ${fr(m.p_up)}／持平 ${fr(m.p_flat)}／下跌 ${fr(m.p_down)}"><span class="${mlCls(m.label)}">${mlArrow(m.label)}</span>${esc(m.name)}<span class="code">${esc(m.code)}</span><span class="prob">↑${fr(m.p_up)} ↓${fr(m.p_down)}</span></span>`).join("")
+      : stocks.slice(0, 6).map(v => `<span class="stag"><span class="${cls(v.score)}">${v.score > 0 ? "▲" : v.score < 0 ? "▼" : "–"}</span>${esc(v.name)}<span class="code">${esc(v.code)}</span></span>`).join("")}</div>
+    ${p || useML ? `<details class="why"><summary>為什麼這樣判斷</summary>${hasML() ? mlWhyHTML(ml, feed.mlH) : ""}
+      ${p ? `${hasML() ? `<h4 style="margin:12px 0 2px">字典規則（對照）</h4>` : ""}${impactsHTML(stocks)}<div class="hits">${hitsHTML(hl)}</div>
+      <div class="note" style="margin-top:6px">字典預測建立於 ${when(p.created_at)}，使用詞典第 ${p.lexicon_version} 版，已鎖定。</div>` : ""}</details>` : ""}
   </div></article>`;
 }
 
@@ -229,7 +271,8 @@ function renderTry(a) {
   $("tOut").innerHTML = `<article class="news ${a.label}"><div class="stripe"></div><div class="nbody">
     <div class="meta"><span class="pill ${a.label}">${LABEL[a.label]}</span><span class="score ${cls(a.total)}">${fmt(a.total)}</span><span>影響程度 ${strength(a.total)}</span><span>詞典第 ${a.lexicon_version} 版</span></div>
     <h3>${linkTitle(url, highlight(t, 0, a))}</h3><p class="text">${highlight(b, t.length + 1, a)}</p>
-    <h2 style="margin-top:14px">受影響個股</h2>${impactsHTML(a.impacts)}<div class="hits">${hitsHTML(a)}</div>
+    ${hasML() ? `<h2 style="margin-top:14px">機器學習判斷（第 ${feed.mlH} 日，預覽、不存檔）</h2>${mlPreviewHTML((a.ml || {})[feed.mlH] || [])}` : ""}
+    <h2 style="margin-top:14px">受影響個股${hasML() ? "（字典規則・對照）" : ""}</h2>${impactsHTML(a.impacts)}<div class="hits">${hitsHTML(a)}</div>
     <div class="row" style="margin-top:12px">${url
       ? (tryMeta.saved_id ? `<span class="note">這則新聞已經在列表裡。</span>` : `<button class="btn ghost" id="tAdd">加入新聞列表</button><span class="note" id="addMsg">加入後會存進資料庫並鎖定預測</span>`)
       : `<span class="note">要加入新聞列表，請在上方填入原文網址。</span>`}</div></div></article>`;
@@ -351,7 +394,10 @@ async function loadVal() {
   const thr = (parseFloat($("vThr").value) || 0) / 100;
   const p = new URLSearchParams({horizon: val.h, benchmark: val.benchmark, threshold: Math.min(0.5, Math.max(0, thr)), scope: val.scope});
   if (val.dedupe) p.set("dedupe", "true");
-  if (val.lex) p.set("lexicon_version", val.lex);
+  const [kind, ver] = (val.lex || "").split(":");
+  if (kind === "lex") p.set("lexicon_version", ver);
+  else if (kind === "ml") { p.set("predictor", "ml"); if (ver) p.set("ml_version", ver); }
+  else p.set("predictor", "lexicon");
   try {
     const d = await api("/api/validation?" + p);
     if (seq !== valSeq) return;
@@ -362,8 +408,12 @@ async function loadVal() {
 function renderVal() {
   const d = val.data, s = d.summary, ex = d.params.benchmark === "excess", h = d.params.horizon;
   const range = d.data_range.first ? `${d.data_range.first} 至 ${d.data_range.last}` : "尚無資料";
-  $("vWarn").innerHTML = (val.lex ? `目前顯示<b>第 ${val.lex} 版詞典的重算結果</b>（不是當時鎖定的預測），用來比較詞典修改的效果。`
-                                  : "目前顯示<b>鎖定的原始預測</b>。") +
+  const [kind, ver] = (val.lex || "").split(":");
+  $("vWarn").innerHTML = (kind === "ml" ? (ver ? `目前顯示<b>機器學習模型第 ${ver} 版的重算結果</b>（不是當時鎖定的預測）。`
+                                               : `目前顯示<b>機器學習鎖定的原始預測</b>（第 ${h} 日的模型）。`) +
+                          ` ${mlEvalLine(h)} <b>這個模型的命中率仍輸給「全部猜跌」，扣完整交易成本後不賺錢，只能當參考。</b>`
+                        : kind === "lex" ? `目前顯示<b>第 ${ver} 版詞典的重算結果</b>（不是當時鎖定的預測），用來比較詞典修改的效果。`
+                        : "目前顯示<b>字典規則鎖定的原始預測</b>（對照組）。") +
     ` 收盤價資料：${range}。` + (s.n < 30 ? ` <b>有方向的預測只有 ${s.n} 筆，命中率參考價值有限。</b>` : "") +
     d.notes.map(n => ` <b>${esc(n)}</b>`).join("");
   const tile = (k, v, sub, c = "") => `<div class="tile"><div class="k">${k}</div><div class="v ${c}">${v}</div><div class="s">${sub}</div></div>`;
@@ -388,7 +438,7 @@ function renderVal() {
       : r.pred === "flat" ? `<span class="res wait">中性・不計</span>` : r.hit ? `<span class="res ok">命中</span>` : `<span class="res bad">未命中</span>`;
     const done = r.status === "done";
     return `<tr><td class="n">${r.date.slice(5).replace("-", "/")} ${r.time || ""}</td><td class="ttl">${linkTitle(r.url, esc(r.title))}<div class="code">${esc(srcLabel({source_name: (META && META.sources[r.source]) || r.source, via_outlet: r.via_outlet}))}${r.merged > 1 ? `・當日共 ${r.merged} 則，已合併` : ""}</div></td><td><b>${esc(r.name)}</b> <span class="code">${esc(r.code)}</span>${r.type === "sector" ? `<div class="code">產業連動</div>` : ""}</td>
-      <td class="${cls(r.score)}">${r.pred === "up" ? "利多" : r.pred === "down" ? "利空" : "中性"} <span class="code">${fmt(r.score)}</span></td>
+      <td class="${cls(r.score)}">${r.pred === "up" ? "利多" : r.pred === "down" ? "利空" : "中性"} <span class="code" title="${kind === "ml" ? "上漲機率 − 下跌機率" : "字典分數"}">${kind === "ml" ? pct(r.score, 0) : fmt(r.score)}</span></td>
       <td class="n">${done ? `${r.p0} → ${r.p1}<div class="code">${r.base_date.slice(5)} → ${r.end_date.slice(5)}</div>` : "—"}</td><td class="n ${r.ex != null ? cls(r.ex) : ""}">${done ? pct(r.ex, 2) + `<div class="code">${DIR[r.act]}</div>` : "—"}</td><td>${res}</td></tr>`;
   }).join("") || `<tr><td colspan="7" class="note" style="text-align:center;padding:20px">沒有符合條件的資料</td></tr>`;
   if (s.nodata) $("vRows").insertAdjacentHTML("beforeend", `<tr><td colspan="7" class="note">另有 ${s.nodata} 筆因缺少該股價格（停牌、新上市）或新聞早於價格資料而略過。</td></tr>`);
@@ -400,6 +450,7 @@ function seg(id, cb) {
   });
 }
 seg("vH", v => { val.h = +v; loadVal(); });
+seg("mlH", v => { feed.mlH = v; renderFeed(); });
 seg("vB", v => { val.benchmark = v; loadVal(); });
 seg("vS", v => { val.scope = v; loadVal(); });
 seg("vD", v => { val.dedupe = v; loadVal(); });
@@ -412,19 +463,42 @@ let thrTimer = null;
 $("vThr").oninput = () => { clearTimeout(thrTimer); thrTimer = setTimeout(loadVal, 300); };
 $("vLex").onchange = e => { val.lex = e.target.value; loadVal(); };
 
+let valDefaulted = false;
 function fillLexSelect() {
-  const sel = $("vLex");
-  sel.innerHTML = `<option value="">原始預測（鎖定）</option>` +
-    META.recalc_versions.map(v => `<option value="${v}">第 ${v} 版詞典重算</option>`).join("");
-  sel.value = META.recalc_versions.includes(+val.lex) ? val.lex : "";
+  const sel = $("vLex"), ml = META.ml || {models: [], recalc_versions: [], locked: 0};
+  const opts = [];
+  if (ml.models.length) {
+    opts.push(["ml", `機器學習（鎖定）${ml.locked ? "" : "・目前 0 則"}`]);
+    ml.recalc_versions.forEach(v => opts.push([`ml:${v}`, `機器學習重算 第 ${v} 版`]));
+  }
+  opts.push(["", "字典（鎖定）・對照"]);
+  META.recalc_versions.forEach(v => opts.push([`lex:${v}`, `字典重算 第 ${v} 版`]));
+  sel.innerHTML = opts.map(([v, t]) => `<option value="${v}">${t}</option>`).join("");
+  if (!valDefaulted) {   // 預設看機器學習：有鎖定的就看鎖定的，還沒有就看最新的重算結果
+    valDefaulted = true;
+    val.lex = !ml.models.length ? "" : ml.locked ? "ml" : ml.recalc_versions.length ? `ml:${ml.recalc_versions[0]}` : "ml";
+  }
+  sel.value = opts.some(([v]) => v === val.lex) ? val.lex : "";
+  $("vMlRecalc").hidden = !ml.models.length;
 }
+
+$("vMlRecalc").onclick = async () => {
+  const btn = $("vMlRecalc"); btn.disabled = true;
+  try {
+    const r = await api("/api/ml/recalc", {method: "POST"});
+    await loadMeta();
+    val.lex = `ml:${r.model_version}`; fillLexSelect();
+    await loadVal(); refreshFeed();
+  } catch (e) { $("vWarn").innerHTML = `<span class="err">${esc(e.message)}</span>`; }
+  finally { btn.disabled = false; }
+};
 
 $("vRecalc").onclick = async () => {
   const btn = $("vRecalc"); btn.disabled = true;
   try {
     const r = await api("/api/recalc", {method: "POST"});
     await loadMeta();
-    val.lex = String(r.lexicon_version); fillLexSelect();
+    val.lex = `lex:${r.lexicon_version}`; fillLexSelect();
     $("pMsg").textContent = "";
     await loadVal();
   } catch (e) { $("vWarn").innerHTML = `<span class="err">${esc(e.message)}</span>`; }

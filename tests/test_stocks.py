@@ -50,6 +50,13 @@ def test_suffix_alias():
     assert load.auto_aliases("臻鼎-KY") == ["臻鼎"]
     assert load.auto_aliases("華義*") == ["華義"]
     assert load.auto_aliases("台積電") == []
+    # 後綴疊在一起：保留 -KY 的寫法，全部拿掉的只在三個字以上時產生
+    assert load.auto_aliases("錼創科技-KY創") == ["錼創科技-KY", "錼創科技"]
+    assert load.auto_aliases("永悅健康-創") == ["永悅健康"]
+    assert load.auto_aliases("成信實業*-創") == ["成信實業"]
+    assert load.auto_aliases("矽力*-KY") == ["矽力*", "矽力-KY"]
+    assert load.auto_aliases("材料*-KY") == ["材料*", "材料-KY"]          # 不產生「材料」（電子材料）
+    assert load.auto_aliases("榮惠-KY創") == ["榮惠-KY"]
 
 
 def test_overrides_add_aliases_and_sectors(raw):

@@ -25,6 +25,7 @@ NAME_RULES_PATH = config.CONFIG_DIR / "name_rules.json"
 OVERRIDES_PATH = config.CONFIG_DIR / "stock_overrides.json"
 BRACKETS = {"【": "】", "「": "」", "『": "』", "〈": "〉", "《": "》"}
 WINDOW = 12
+_VARIANTS = str.maketrans("臺", "台")
 
 
 @dataclass
@@ -46,7 +47,9 @@ class NameRules:
         return cls(
             trusted=trusted,
             ambiguous_long=set(d.get("ambiguous_long", [])),
-            exclude_phrases=d.get("exclude_phrases", {}),
+            # 引擎比對前會把「臺」統一成「台」，片語也一樣統一
+            exclude_phrases={k.translate(_VARIANTS): [p.translate(_VARIANTS) for p in v]
+                             for k, v in d.get("exclude_phrases", {}).items()},
             # 後面：中間可以隔空白、數字、月份等，例如「尖點 9 月營收」
             context_after=re.compile(rf"^[\s\d月日年%.]*(?:{alt(d['context_after'])})"),
             context_before=re.compile(rf"(?:{alt(d['context_before'])})[\s／/：:]*$"),

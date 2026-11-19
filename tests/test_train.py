@@ -41,7 +41,8 @@ def test_samples_are_one_per_stock_day_with_term_counts(conn):
     add(conn, 1, "甲乙科技漲停", "甲乙科技營收成長。", "2026-09-02T15:00:00+08:00")
     add(conn, 2, "丙丁電子遭砍單", "丙丁電子出現虧損，未見成長。", "2026-09-02T10:00:00+08:00")
     s = {x.code: x for x in train.build_samples(conn, BASE)}
-    assert set(s) == {"1111", "2222"} and s["1111"].day == "2026-09-02"      # 盤中、盤後的基準日都是當天
+    assert set(s) == {"1111", "2222"}
+    assert s["2222"].day == "2026-09-02" and s["1111"].day == "2026-09-03"   # 13:00 前當天收盤進場；15:00 → 下一個交易日
     assert s["1111"].features == {"漲停": 1.5, "成長": 1.0}                    # 標題 ×1.5；每個詞只取方向，不帶人工強度
     assert s["2222"].features == {"砍單": -1.5, "虧損": -1.0, "成長": -1.0}    # 「未見成長」算負的
 
@@ -66,8 +67,22 @@ def test_label_uses_validation_rules(conn):
     samples = [Sample("1111", "2026-09-02", {"成長": 1.0}), Sample("2222", "2026-09-02", {"虧損": -1.0}),
                Sample("1111", "2026-09-01", {"成長": 1.0}), Sample("1111", "2026-09-03", {"成長": 1.0})]
     train.label(conn, samples, horizon=1)
-    assert [s.y for s in samples] == [1, 0, None, None]     # 9/1→9/2 持平不用；9/3 之後還沒有價格
+    assert [s.y for s in samples] == [1, 0, None, None]     # 舊二元標籤：9/1→9/2 持平為 None；9/3 之後還沒有價格
+    assert [s.act for s in samples] == ["up", "down", "flat", None]                 # 持平是有效標籤
+    assert [s.end_day for s in samples] == ["2026-09-03", "2026-09-03", "2026-09-02", None]
+    assert [s.status for s in samples] == ["done", "done", "done", "wait"]
     assert samples[0].ex == pytest.approx(0.06) and samples[1].ex == pytest.approx(-0.05)
+
+
+def day_of(d: int) -> str:
+    return f"2026-{9 + d // 28:02d}-{d % 28 + 1:02d}"
+
+
+def mk(code, d, f, y, horizon=1):
+    """y：1＝漲、0＝跌、None＝持平；標籤結束日＝第 horizon 個交易日。"""
+    act = {1: "up", 0: "down", None: "flat"}[y]
+    ex = {1: 0.03, 0: -0.03, None: 0.0}[y]
+    return Sample(code, day_of(d), f, 1, ex, y, act, day_of(d + horizon))
 
 
 def synthetic(days=20, per_day=30, seed=1):
@@ -86,38 +101,40 @@ def synthetic(days=20, per_day=30, seed=1):
                 f["壞"] = -1.0          # 負面詞的特徵是負的（和引擎一樣）
             if d == 0 and i < 3:
                 f["罕"] = 1.0
-            out.append(Sample(f"{i:04d}", f"2026-{9 + d // 28:02d}-{d % 28 + 1:02d}", f, 1, 0.03 if y else -0.03, y))
+            out.append(mk(f"{i:04d}", d, f, y))
     return out
 
 
 def test_model_learns_signal_and_beats_baselines():
     pytest.importorskip("sklearn")
-    res = train.train(synthetic(), min_count=15, test_share=0.3)
+    res = train.train(synthetic(), min_count=15, test_share=0.3, target="strong")
     assert res.n_days == 20 and res.n_train == 14 * 30 and res.n_test == 6 * 30
     assert res.train_days[1] < res.test_days[0]                         # 測試期全部在訓練期之後
-    assert res.weights["好"] > 0.5 and res.weights["壞"] > 0.5           # 負面詞的特徵是負的，所以係數也是正的
+    assert res.weights["好"] > 0 and res.weights["壞"] > 0                # 負面詞的特徵是負的，所以係數也是正的（大小隨正則化 C 變）
     assert abs(res.weights["雜"]) < min(res.weights["好"], res.weights["壞"]) / 2
     assert "罕" not in res.weights                                       # 出現太少的詞不納入
+    assert res.n_purged == 0                                               # 第 1 日報酬在測試開始日收盤就觀測完了
     m = res.metrics
     assert m["模型（估計的權重）"]["accuracy"] > m["全猜多數"]["accuracy"] + 0.1
+    assert m["模型（估計的權重）"]["balanced_accuracy"] > m["全猜多數"]["balanced_accuracy"] + 0.1
     assert m["模型（估計的權重）"]["spread"] > 0.02
 
 
 def test_no_signal_means_no_edge():
     pytest.importorskip("sklearn")
     rng = random.Random(7)
-    data = [Sample("1", f"2026-09-{d + 1:02d}", {"雜": float(rng.randint(0, 2)), "訊": float(rng.randint(-1, 1))}, 1,
-                   0.02 if (y := rng.random() < 0.5) else -0.02, int(y)) for d in range(20) for _ in range(40)]
-    res = train.train(data, min_count=5)
+    data = [mk("1", d, {"雜": float(rng.randint(0, 2)), "訊": float(rng.randint(-1, 1))}, int(rng.random() < 0.5))
+            for d in range(20) for _ in range(40)]
+    res = train.train(data, min_count=5, target="strong")
     assert abs(res.metrics["模型（估計的權重）"]["accuracy"] - 0.5) < 0.1    # 沒有訊號就學不到東西
 
 
 def test_train_refuses_when_data_is_too_thin():
     pytest.importorskip("sklearn")
-    few = [Sample("1", f"2026-09-0{d}", {"好": 1.0}, 1, 0.02, 1) for d in (1, 2, 3)]
+    few = [mk("1", d, {"好": 1.0}, 1) for d in range(3)]
     with pytest.raises(ValueError, match="交易日"):
         train.train(few)
-    one_side = [Sample("1", f"2026-09-{d:02d}", {"好": 1.0}, 1, 0.02, 1) for d in range(1, 11)]
+    one_side = [mk("1", d, {"好": 1.0}, 1) for d in range(10)]
     with pytest.raises(ValueError, match="只有漲或只有跌"):
         train.train(one_side)
     with pytest.raises(ValueError, match="min-count"):
@@ -132,3 +149,54 @@ def test_save_writes_readable_json(tmp_path):
     d = json.loads((tmp_path / "w.json").read_text(encoding="utf-8"))
     assert d["weights"][0]["weight"] >= d["weights"][-1]["weight"] and {"term", "weight", "samples"} <= set(d["weights"][0])
     assert d["n_train"] == res.n_train and "模型（估計的權重）" in d["metrics"]
+    assert d["target"] == "3class" and d["target_version"] and "n_purged" in d
+
+
+def three_class(days=30, per_day=30, seed=3, horizon=1):
+    """「好」→ 多半漲、「壞」→ 多半跌、都沒有 → 多半持平。"""
+    rng = random.Random(seed)
+    out = []
+    for d in range(days):
+        for i in range(per_day):
+            k = rng.random()
+            f = {"雜": float(rng.randint(0, 2))}
+            if k < 1 / 3:
+                f["好"], y = 1.0, (1 if rng.random() < 0.8 else None)
+            elif k < 2 / 3:
+                f["壞"], y = -1.0, (0 if rng.random() < 0.8 else None)
+            else:
+                y = None if rng.random() < 0.8 else rng.choice((0, 1))
+            out.append(mk(f"{i:04d}", d, f, y, horizon))
+    return out
+
+
+def test_three_class_keeps_flat_samples_in_train_and_test():
+    pytest.importorskip("sklearn")
+    data = three_class()
+    res = train.train(data, min_count=15)
+    assert res.target == "3class" and res.n_train + res.n_test == len(data)       # 持平樣本沒有被丟掉
+    m = res.metrics["模型（估計的權重）"]
+    assert m["n_labeled"] == res.n_test and m["actual_share"]["flat"] > 0.3
+    assert 0 < m["coverage"] < 1                                                   # 會猜持平＝不發訊號
+    assert m["balanced_accuracy"] > res.metrics["全猜多數"]["balanced_accuracy"] + 0.2
+    assert res.weights["好"] > 0 and res.weights["壞"] > 0                         # 漲對跌的對數勝算
+    strong = train.train(data, min_count=15, target="strong")
+    assert strong.n_train + strong.n_test < len(data)
+    assert strong.metrics["模型（估計的權重）"]["actual_share"]["flat"] == 0
+
+
+def test_purging_drops_training_labels_that_overlap_the_test_period():
+    pytest.importorskip("sklearn")
+    h = 5
+    res = train.train(three_class(horizon=h), min_count=15, test_share=0.3)
+    # 測試期從 index 21 開始；index 17～20 的 5 日標籤結束日在那之後
+    assert res.n_purged == (h - 1) * 30            # 結束日剛好是測試開始日的，收盤時已觀測完，可以留
+    assert res.train_days[1] == day_of(21 - h)
+
+
+def test_missing_end_day_is_an_error_not_silently_unpurged():
+    pytest.importorskip("sklearn")
+    data = three_class()
+    data[0].end_day = None
+    with pytest.raises(ValueError, match="end_day"):
+        train.train(data)
